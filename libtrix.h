@@ -1,5 +1,5 @@
-#ifndef _TRILIB_H_
-#define _TRILIB_H_
+#ifndef _LIBTRIX_H_
+#define _LIBTRIX_H_
 
 // rudimentary triangle mesh library
 // basic features shared between stl generating toys

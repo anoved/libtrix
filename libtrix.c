@@ -1,5 +1,5 @@
 
-#include "tristl.h"
+#include "libtrix.h"
 
 unsigned long tmMeshFacecount(tm_mesh *mesh) {
 	unsigned long count;
