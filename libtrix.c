@@ -22,6 +22,10 @@ unsigned long tmMeshFacecount(tm_mesh *mesh) {
 int tmWriteMeshHeaderBinary(FILE *stl_dst, tm_mesh *mesh) {
 	char header[80];
 	
+	if (mesh == NULL) {
+		return 1;
+	}
+	
 	// could put some mesh metadata in header (facecount, provenance, etc)
 	strncpy(header, "Binary STL", 80);
 	
