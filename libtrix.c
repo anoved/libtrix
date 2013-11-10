@@ -1,3 +1,6 @@
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 #include "libtrix.h"
 
@@ -77,7 +80,7 @@ int trixWriteFooterASCII(FILE *stl_dst, trix_mesh *mesh) {
 
 int trixWriteFooter(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode) {
 	if (mode == TM_STL_ASCII) {
-		return tmWriteMeshFooterASCII(stl_dst, mesh);
+		return trixWriteFooterASCII(stl_dst, mesh);
 	}
 	// no footer in binary mode
 	return 0;
@@ -98,8 +101,8 @@ int trixWriteFaceASCII(FILE *stl_dst, trix_face *face) {
 			"endloop\n"
 			"endfacet\n",
 			face->triangle.n.x, face->triangle.n.y, face->triangle.n.z,
-			face->triangle.a.x, face->triangle.a.y, face->triangle.a.z
-			face->triangle.b.x, face->triangle.b.y, face->triangle.b.z
+			face->triangle.a.x, face->triangle.a.y, face->triangle.a.z,
+			face->triangle.b.x, face->triangle.b.y, face->triangle.b.z,
 			face->triangle.c.x, face->triangle.c.y, face->triangle.c.z) < 0) {
 		return 1;
 	}

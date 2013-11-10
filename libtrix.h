@@ -21,7 +21,7 @@ typedef struct {
 
 struct trix_face_node {
 	trix_triangle triangle;
-	struct trix_face *next;
+	struct trix_face_node *next;
 };
 typedef struct trix_face_node trix_face;
 
@@ -50,7 +50,7 @@ int trixWrite(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode);
 //int trixRead(FILE *stl_src, trix_mesh *mesh);
 
 // free memory associated with mesh (disassembles face list)
-int trixRelease(trix_mesh *mesh);
+void trixRelease(trix_mesh *mesh);
 
 // updates triangle's n vector as unit normal of vertices a, b, c
 //int tmComputeTriangleNormal(trix_triangle *triangle);
