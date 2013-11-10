@@ -41,10 +41,10 @@ typedef enum {
 // creates empty new mesh
 trix_mesh *trixCreate(void);
 
-// output mesh to stl_dst in format indicated by mode; returns nonzero on error
+// output mesh to dst_path format indicated by mode. writes to stdout if dst_path is null. returns nonzero on error
 int trixWrite(const char *dst_path, trix_mesh *mesh, trix_stl_mode mode);
 
-// creates mesh read from stl_src
+// creates mesh read from stl_src; reads from stdin if src_path is null. returns null on error.
 trix_mesh *trixRead(const char *src_path);
 
 // free memory associated with mesh (disassembles face list)
