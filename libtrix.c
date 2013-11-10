@@ -135,15 +135,36 @@ static int trixWriteFace(FILE *stl_dst, trix_face *face, trix_stl_mode mode) {
 			: trixWriteFaceBinary(stl_dst, face));
 }
 
+static void trixCloseOutput(FILE *dst) {
+	if (dst != NULL && dst != stdout) {
+		fclose(dst);
+	}
+}
+
+static void trixCloseInput(FILE *src) {
+	if (src != NULL && src != stdin) {
+		fclose(src);
+	}
+}
+
 // stl_dst is assumed to be open and ready for writing
-int trixWrite(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode) {
+int trixWrite(const char *dst_path, trix_mesh *mesh, trix_stl_mode mode) {
 	trix_face *face;
+	FILE *stl_dst;
 	
 	if (mesh == NULL) {
 		return 1;
 	}
 	
+	if (dst_path == NULL) {
+		stl_dst = stdout;
+	} else if ((stl_dst = fopen(dst_path, "w")) == NULL) {
+		// failed to open dst
+		return 1;
+	}
+	
 	if (trixWriteHeader(stl_dst, mesh, mode) != 0) {
+		trixCloseOutput(stl_dst);
 		return 1;
 	}
 	
@@ -151,6 +172,7 @@ int trixWrite(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode) {
 	while (face != NULL) {
 		
 		if (trixWriteFace(stl_dst, face, mode) != 0) {
+			trixCloseOutput(stl_dst);
 			return 1;
 		}
 		
@@ -158,9 +180,11 @@ int trixWrite(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode) {
 	}
 	
 	if (trixWriteFooter(stl_dst, mesh, mode) != 0) {
+		trixCloseOutput(stl_dst);
 		return 1;
 	}
 	
+	trixCloseOutput(stl_dst);
 	return 0;
 }
 
@@ -212,12 +236,23 @@ static trix_mesh *trixReadBinary(FILE *stl_src) {
 }
 
 // read stl data from stl_src and populate a new trix_mesh, which is returned
-trix_mesh *trixRead(FILE *stl_src) {
+trix_mesh *trixRead(const char *src_path) {
+	trix_mesh *mesh;
+	FILE *stl_src;
+	
+	if (src_path == NULL) {
+		stl_src = stdin;
+	} else if ((stl_src = fopen(src_path, "r")) == NULL) {
+		return NULL;
+	}
 	
 	// if stl_src begins with "solid", interpret it as an ascii STL
 	// otherwise, interpret it as a binary STL (reset fp to start)
-		
-	return trixReadBinary(stl_src);
+	
+	mesh = trixReadBinary(stl_src);
+	
+	trixCloseInput(stl_src);
+	return mesh;
 }
 
 int trixAddTriangle(trix_mesh *mesh, trix_triangle triangle) {

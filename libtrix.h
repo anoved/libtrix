@@ -9,8 +9,6 @@
 // the message in a variable which caller can query?
 // unless standard error functions cover that use
 
-#include <stdio.h>
-
 typedef struct {
 	float x, y, z;
 } trix_vertex;
@@ -44,10 +42,10 @@ typedef enum {
 trix_mesh *trixCreate(void);
 
 // output mesh to stl_dst in format indicated by mode; returns nonzero on error
-int trixWrite(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode);
+int trixWrite(const char *dst_path, trix_mesh *mesh, trix_stl_mode mode);
 
 // creates mesh read from stl_src
-trix_mesh *trixRead(FILE *stl_src);
+trix_mesh *trixRead(const char *src_path);
 
 // free memory associated with mesh (disassembles face list)
 void trixRelease(trix_mesh *mesh);
