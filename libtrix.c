@@ -160,12 +160,17 @@ int tmWriteMeshToSTL(FILE *stl_dst, tm_mesh *mesh, tm_stl_mode mode) {
 }
 
 int tmAddTriangleToMesh(tm_mesh *mesh, tm_triangle triangle) {
-
-	// sanity check mesh
-	
 	tm_face *face;
 	
+	if (mesh == NULL) {
+		return 1;
+	}
+	
 	face = (tm_face *)malloc(sizeof(tm_face));
+	if (face == NULL) { 
+		return 1;
+	}
+	
 	face->triangle = triangle;
 	face->next = NULL;
 	
@@ -178,8 +183,9 @@ int tmAddTriangleToMesh(tm_mesh *mesh, tm_triangle triangle) {
 		mesh->last = face;
 	}
 	
+	// perhaps useful to return pointer to new face or something?
 	
-	// perhaps useful to return pointer to new face or something? 
+	return 0;
 }
 
 int tmReleaseMesh(tm_mesh *mesh) {
