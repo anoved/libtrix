@@ -86,8 +86,12 @@ int tmWriteMeshFooter(FILE *stl_dst, tm_mesh *mesh, tm_stl_mode mode) {
 
 
 int tmWriteFaceToSTLASCII(FILE *stl_dst, tm_face *face) {
-	tm_triangle t = face->triangle;
-	fprintf(stl_dst,
+	
+	if (face == NULL) {
+		return 1;
+	}
+	
+	if (fprintf(stl_dst,
 			"facet normal %f %f %f\n"
 			"outer loop\n"
 			"vertex %f %f %f\n"
@@ -95,10 +99,14 @@ int tmWriteFaceToSTLASCII(FILE *stl_dst, tm_face *face) {
 			"vertex %f %f %f\n"
 			"endloop\n"
 			"endfacet\n",
-			t.n.x, t.n.y, t.n.z,
-			t.a.x, t.a.y, t.a.z
-			t.b.x, t.b.y, t.b.z
-			t.c.x, t.c.y, t.c.z);
+			face->triangle.n.x, face->triangle.n.y, face->triangle.n.z,
+			face->triangle.a.x, face->triangle.a.y, face->triangle.a.z
+			face->triangle.b.x, face->triangle.b.y, face->triangle.b.z
+			face->triangle.c.x, face->triangle.c.y, face->triangle.c.z) < 0) {
+		return 1;
+	}
+	
+	return 0;
 }
 
 int tmWriteFaceToSTLBinary(FILE *stl_dst, tm_face *face) {
