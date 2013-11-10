@@ -71,6 +71,10 @@ int trixWriteHeader(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode) {
 
 int trixWriteFooterASCII(FILE *stl_dst, trix_mesh *mesh) {
 	
+	if (mesh == NULL) {
+		return 1;
+	}
+	
 	if (fprintf(stl_dst, "endsolid MESH\n") < 0) {
 		return 1;
 	}
