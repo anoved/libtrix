@@ -43,11 +43,17 @@ int tmWriteMeshHeaderBinary(FILE *stl_dst, tm_mesh *mesh) {
 }
 
 int tmWriteMeshHeaderASCII(FILE *stl_dst, tm_mesh *mesh) {
+	
+	if (mesh == NULL) {
+		return 1;
+	}
+	
 	// what are the length and content constraints on name?
 	// not specified in http://www.ennex.com/~fabbers/StL.asp
 	// so be conservative (or look for conventions elsewhere)
 	// (consider using mesh->name instead of fixed name)
 	fprintf(stl_dst, "solid MESH\n");
+	return 0;
 }
 
 int tmWriteMeshFooterASCII(FILE *stl_dst, tm_mesh *mesh) {
