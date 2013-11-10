@@ -4,7 +4,7 @@
 
 #include "libtrix.h"
 
-unsigned long trixFacecount(trix_mesh *mesh) {
+static unsigned long trixFacecount(trix_mesh *mesh) {
 	unsigned long count;
 	trix_face *face;
 	
@@ -22,7 +22,7 @@ unsigned long trixFacecount(trix_mesh *mesh) {
 	return count;
 }
 
-int trixWriteHeaderBinary(FILE *stl_dst, trix_mesh *mesh) {
+static int trixWriteHeaderBinary(FILE *stl_dst, trix_mesh *mesh) {
 	char header[80];
 	
 	if (mesh == NULL) {
@@ -45,7 +45,7 @@ int trixWriteHeaderBinary(FILE *stl_dst, trix_mesh *mesh) {
 	return 0;
 }
 
-int trixWriteHeaderASCII(FILE *stl_dst, trix_mesh *mesh) {
+static int trixWriteHeaderASCII(FILE *stl_dst, trix_mesh *mesh) {
 	
 	if (mesh == NULL) {
 		return 1;
@@ -63,13 +63,13 @@ int trixWriteHeaderASCII(FILE *stl_dst, trix_mesh *mesh) {
 	return 0;
 }
 
-int trixWriteHeader(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode) {
+static int trixWriteHeader(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode) {
 	return (mode == TM_STL_ASCII
 			? trixWriteHeaderASCII(stl_dst, mesh)
 			: trixWriteHeaderBinary(stl_dst, mesh));
 }
 
-int trixWriteFooterASCII(FILE *stl_dst, trix_mesh *mesh) {
+static int trixWriteFooterASCII(FILE *stl_dst, trix_mesh *mesh) {
 	
 	if (mesh == NULL) {
 		return 1;
@@ -82,7 +82,7 @@ int trixWriteFooterASCII(FILE *stl_dst, trix_mesh *mesh) {
 	return 0;
 }
 
-int trixWriteFooter(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode) {
+static int trixWriteFooter(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode) {
 	if (mode == TM_STL_ASCII) {
 		return trixWriteFooterASCII(stl_dst, mesh);
 	}
@@ -90,7 +90,7 @@ int trixWriteFooter(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode) {
 	return 0;
 }
 
-int trixWriteFaceASCII(FILE *stl_dst, trix_face *face) {
+static int trixWriteFaceASCII(FILE *stl_dst, trix_face *face) {
 	
 	if (face == NULL) {
 		return 1;
@@ -114,7 +114,7 @@ int trixWriteFaceASCII(FILE *stl_dst, trix_face *face) {
 	return 0;
 }
 
-int trixWriteFaceBinary(FILE *stl_dst, trix_face *face) {
+static int trixWriteFaceBinary(FILE *stl_dst, trix_face *face) {
 	unsigned short attributes = 0;
 	
 	// triangle struct is 12 floats in sequence needed for output!
@@ -129,7 +129,7 @@ int trixWriteFaceBinary(FILE *stl_dst, trix_face *face) {
 	return 0;
 }
 
-int trixWriteFace(FILE *stl_dst, trix_face *face, trix_stl_mode mode) {
+static int trixWriteFace(FILE *stl_dst, trix_face *face, trix_stl_mode mode) {
 	return (mode == TM_STL_ASCII
 			? trixWriteFaceASCII(stl_dst, face)
 			: trixWriteFaceBinary(stl_dst, face));
@@ -143,21 +143,21 @@ int trixWrite(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode) {
 		return 1;
 	}
 	
-	if (trixWriteHeader(stl_dst, mesh, mode)) {
+	if (trixWriteHeader(stl_dst, mesh, mode) != 0) {
 		return 1;
 	}
 	
 	face = mesh->first;
 	while (face != NULL) {
 		
-		if (trixWriteFace(stl_dst, face, mode)) {
+		if (trixWriteFace(stl_dst, face, mode) != 0) {
 			return 1;
 		}
 		
 		face = face->next;
 	}
 	
-	if (trixWriteFooter(stl_dst, mesh, mode)) {
+	if (trixWriteFooter(stl_dst, mesh, mode) != 0) {
 		return 1;
 	}
 	
