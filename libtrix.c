@@ -5,16 +5,18 @@ unsigned long tmMeshFacecount(tm_mesh *mesh) {
 	unsigned long count;
 	tm_face *face;
 	
-	// sanity check mesh
+	if (mesh == NULL) {
+		return 0;
+	}
 	
-	facecount = 0;
+	count = 0;
 	face = mesh->first;
 	while (face != NULL) {
-		facecount += 1;
+		count += 1;
 		face = face->next;
 	}
 	
-	return facecount;
+	return count;
 }
 
 int tmWriteMeshHeaderBinary(FILE *stl_dst, tm_mesh *mesh) {
