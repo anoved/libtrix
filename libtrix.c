@@ -1,9 +1,9 @@
 
 #include "libtrix.h"
 
-unsigned long tmMeshFacecount(tm_mesh *mesh) {
+unsigned long tmMeshFacecount(trix_mesh *mesh) {
 	unsigned long count;
-	tm_face *face;
+	trix_face *face;
 	
 	if (mesh == NULL) {
 		return 0;
@@ -19,7 +19,7 @@ unsigned long tmMeshFacecount(tm_mesh *mesh) {
 	return count;
 }
 
-int tmWriteMeshHeaderBinary(FILE *stl_dst, tm_mesh *mesh) {
+int tmWriteMeshHeaderBinary(FILE *stl_dst, trix_mesh *mesh) {
 	char header[80];
 	
 	if (mesh == NULL) {
@@ -42,7 +42,7 @@ int tmWriteMeshHeaderBinary(FILE *stl_dst, tm_mesh *mesh) {
 	return 0;
 }
 
-int tmWriteMeshHeaderASCII(FILE *stl_dst, tm_mesh *mesh) {
+int tmWriteMeshHeaderASCII(FILE *stl_dst, trix_mesh *mesh) {
 	
 	if (mesh == NULL) {
 		return 1;
@@ -60,7 +60,7 @@ int tmWriteMeshHeaderASCII(FILE *stl_dst, tm_mesh *mesh) {
 	return 0;
 }
 
-int tmWriteMeshFooterASCII(FILE *stl_dst, tm_mesh *mesh) {
+int tmWriteMeshFooterASCII(FILE *stl_dst, trix_mesh *mesh) {
 	
 	if (fprintf(stl_dst, "endsolid MESH\n") < 0) {
 		return 1;
@@ -70,13 +70,13 @@ int tmWriteMeshFooterASCII(FILE *stl_dst, tm_mesh *mesh) {
 }
 
 
-int tmWriteMeshHeader(FILE *stl_dst, tm_mesh *mesh, tm_stl_mode mode) {
+int tmWriteMeshHeader(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode) {
 	return (mode == TM_STL_ASCII
 			? tmWriteMeshHeaderASCII(stl_dst, mesh)
 			: tmWriteMeshHeaderBinary(stl_dst, mesh));
 }
 
-int tmWriteMeshFooter(FILE *stl_dst, tm_mesh *mesh, tm_stl_mode mode) {
+int tmWriteMeshFooter(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode) {
 	if (mode == TM_STL_ASCII) {
 		return tmWriteMeshFooterASCII(stl_dst, mesh);
 	}
@@ -85,7 +85,7 @@ int tmWriteMeshFooter(FILE *stl_dst, tm_mesh *mesh, tm_stl_mode mode) {
 }
 
 
-int tmWriteFaceToSTLASCII(FILE *stl_dst, tm_face *face) {
+int tmWriteFaceToSTLASCII(FILE *stl_dst, trix_face *face) {
 	
 	if (face == NULL) {
 		return 1;
@@ -109,7 +109,7 @@ int tmWriteFaceToSTLASCII(FILE *stl_dst, tm_face *face) {
 	return 0;
 }
 
-int tmWriteFaceToSTLBinary(FILE *stl_dst, tm_face *face) {
+int tmWriteFaceToSTLBinary(FILE *stl_dst, trix_face *face) {
 	unsigned short attributes = 0;
 	
 	// triangle struct is 12 floats in sequence needed for output!
@@ -124,15 +124,15 @@ int tmWriteFaceToSTLBinary(FILE *stl_dst, tm_face *face) {
 	return 0;
 }
 
-int tmWriteFaceToSTL(FILE *stl_dst, tm_face *face, tm_stl_mode mode) {
+int tmWriteFaceToSTL(FILE *stl_dst, trix_face *face, trix_stl_mode mode) {
 	return (mode == TM_STL_ASCII
 			? tmWriteFaceToSTLASCII(stl_dst, face)
 			: tmWriteFaceToSTLBinary(stl_dst, face));
 }
 
 // stl_dst is assumed to be open and ready for writing
-int tmWriteMeshToSTL(FILE *stl_dst, tm_mesh *mesh, tm_stl_mode mode) {
-	tm_face *face;
+int tmWriteMeshToSTL(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode) {
+	trix_face *face;
 	
 	if (mesh == NULL) {
 		return 1;
@@ -159,14 +159,14 @@ int tmWriteMeshToSTL(FILE *stl_dst, tm_mesh *mesh, tm_stl_mode mode) {
 	return 0;
 }
 
-int tmAddTriangleToMesh(tm_mesh *mesh, tm_triangle triangle) {
-	tm_face *face;
+int tmAddTriangleToMesh(trix_mesh *mesh, trix_triangle triangle) {
+	trix_face *face;
 	
 	if (mesh == NULL) {
 		return 1;
 	}
 	
-	face = (tm_face *)malloc(sizeof(tm_face));
+	face = (trix_face *)malloc(sizeof(trix_face));
 	if (face == NULL) { 
 		return 1;
 	}
@@ -188,9 +188,9 @@ int tmAddTriangleToMesh(tm_mesh *mesh, tm_triangle triangle) {
 	return 0;
 }
 
-void tmReleaseMesh(tm_mesh *mesh) {
+void tmReleaseMesh(trix_mesh *mesh) {
 
-	tm_face *face, *nextface;
+	trix_face *face, *nextface;
 	
 	if (mesh == NULL) {
 		return;
