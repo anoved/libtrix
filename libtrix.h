@@ -40,6 +40,9 @@ typedef enum {
 	TM_STL_ASCII
 } trix_stl_mode;
 
+// allocate and initialize a new trix_mesh
+trix_mesh *trixCreate(void);
+
 // output mesh to stl_dst in format indicated by mode; returns nonzero on error
 int trixWrite(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode);
 

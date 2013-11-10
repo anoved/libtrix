@@ -186,6 +186,20 @@ int trixAddTriangle(trix_mesh *mesh, trix_triangle triangle) {
 	return 0;
 }
 
+trix_mesh *trixCreate(void) {
+	trix_mesh *mesh;
+	
+	mesh = (trix_mesh *)malloc(sizeof(trix_mesh));
+	if (mesh == NULL) {
+		return NULL;
+	}
+	
+	mesh->first = NULL;
+	mesh->last = NULL;
+	mesh->facecount = 0;
+	
+	return mesh;
+}
 
 void trixRelease(trix_mesh *mesh) {
 
@@ -202,4 +216,7 @@ void trixRelease(trix_mesh *mesh) {
 		free(face);
 		face = nextface;
 	}
+	
+	free(mesh);
+	mesh = NULL;
 }
