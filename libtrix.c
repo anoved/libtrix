@@ -188,11 +188,13 @@ int tmAddTriangleToMesh(tm_mesh *mesh, tm_triangle triangle) {
 	return 0;
 }
 
-int tmReleaseMesh(tm_mesh *mesh) {
+void tmReleaseMesh(tm_mesh *mesh) {
 
 	tm_face *face, *nextface;
 	
-	// sanity check mesh
+	if (mesh == NULL) {
+		return;
+	}
 	
 	face = mesh->first;
 	
