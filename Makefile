@@ -1,7 +1,7 @@
 PREFIX = /usr/local
 CFLAGS = -Wall
 
-.PHONY: default lib install uninstall clean
+.PHONY: default lib install uninstall clean test
 
 default: lib
 
@@ -24,3 +24,7 @@ uninstall:
 clean:
 	rm -f libtrix.o
 	rm -f libtrix.a
+
+# run tests, including static analyses
+test:
+	tclsh test/all.tcl -constraint static
