@@ -18,15 +18,22 @@ unsigned long tmMeshFacecount(tm_mesh *mesh) {
 }
 
 int tmWriteMeshHeaderBinary(FILE *stl_dst, tm_mesh *mesh) {
-	char foo = ' ';
+	char header[80];
 	
-	// write 80 characters of foo, possibly including name
-	fwrite(&foo, 1, 80, stl_dst); // bogus
+	// could put some mesh metadata in header (facecount, provenance, etc)
+	strncpy(header, "Binary STL", 80);
 	
-	// write face count
-	fwrite(&mesh->facecount, 4, 1, stl_dst); 
+	if (fwrite(header, 80, 1, stl_dst) != 1) {
+		// failed to write header
+		return 1;
+	}
 	
+	if (fwrite(&mesh->facecount, 4, 1, stl_dst) != 1) {
+		// failed to write face count
+		return 1;
+	}
 	
+	return 0;
 }
 
 int tmWriteMeshHeaderASCII(FILE *stl_dst, tm_mesh *mesh) {
