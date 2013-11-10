@@ -164,6 +164,62 @@ int trixWrite(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode) {
 	return 0;
 }
 
+static trix_mesh *trixReadBinary(FILE *stl_src) {
+	
+	unsigned long facecount, f;
+	trix_triangle triangle;
+	unsigned short attribute;
+	trix_mesh *mesh;
+	
+	// fread instead to get header
+	if (fseek(stl_src, 80, SEEK_SET) != 0) {
+		// seek failure
+		return NULL;
+	}
+	
+	if (fread(&facecount, 4, 1, stl_src) != 1) {
+		// facecount read failure
+		return NULL;
+	}
+	
+	mesh = trixCreate();
+	if (mesh == NULL) {
+		return NULL;
+	}
+	
+	// consider succeeding as long as we can read a whole number of faces,
+	// even if that number read does not match facecount (only optionally treat it as an error?) 
+	
+	for (f = 0; f < facecount; f++) {
+		
+		if (fread(&triangle, 4, 12, stl_src) != 12) {
+			trixRelease(mesh);
+			return NULL;
+		}
+		
+		if (fread(&attribute, 2, 1, stl_src) != 1) {
+			trixRelease(mesh);
+			return NULL;
+		}
+		
+		if (trixAddTriangle(mesh, triangle)) {
+			trixRelease(mesh);
+			return NULL;
+		}
+	}
+	
+	return mesh;
+}
+
+// read stl data from stl_src and populate a new trix_mesh, which is returned
+trix_mesh *trixRead(FILE *stl_src) {
+	
+	// if stl_src begins with "solid", interpret it as an ascii STL
+	// otherwise, interpret it as a binary STL (reset fp to start)
+		
+	return trixReadBinary(stl_src);
+}
+
 int trixAddTriangle(trix_mesh *mesh, trix_triangle triangle) {
 	trix_face *face;
 	

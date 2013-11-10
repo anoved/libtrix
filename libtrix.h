@@ -40,14 +40,14 @@ typedef enum {
 	TM_STL_ASCII
 } trix_stl_mode;
 
-// allocate and initialize a new trix_mesh
+// creates empty new mesh
 trix_mesh *trixCreate(void);
 
 // output mesh to stl_dst in format indicated by mode; returns nonzero on error
 int trixWrite(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode);
 
-// populate mesh face list with triangles read from stl-src
-//int trixRead(FILE *stl_src, trix_mesh *mesh);
+// creates mesh read from stl_src
+trix_mesh *trixRead(FILE *stl_src);
 
 // free memory associated with mesh (disassembles face list)
 void trixRelease(trix_mesh *mesh);
