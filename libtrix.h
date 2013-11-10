@@ -58,6 +58,10 @@ void trixRelease(trix_mesh *mesh);
 // appends a trix_face containing triangle to the end of the mesh list
 int trixAddTriangle(trix_mesh *mesh, trix_triangle triangle);
 
+// mesh facecount is updated automatically by trixAddTriangle,
+// but as a utility trixFacecount will double-check the count
+unsigned long trixFacecount(trix_mesh *mesh);
+
 
 // CSG operations
 

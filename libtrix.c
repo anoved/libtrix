@@ -4,7 +4,7 @@
 
 #include "libtrix.h"
 
-static unsigned long trixFacecount(trix_mesh *mesh) {
+unsigned long trixFacecount(trix_mesh *mesh) {
 	unsigned long count;
 	trix_face *face;
 	
