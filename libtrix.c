@@ -112,11 +112,16 @@ int tmWriteFaceToSTLASCII(FILE *stl_dst, tm_face *face) {
 int tmWriteFaceToSTLBinary(FILE *stl_dst, tm_face *face) {
 	unsigned short attributes = 0;
 	
-	
 	// triangle struct is 12 floats in sequence needed for output!
-	fwrite(&face->triangle, 4, 12, stl_dst);
+	if (fwrite(&face->triangle, 4, 12, stl_dst) != 12) {
+		return 1;
+	}
 	
-	fwrite(&attributes, 2, 1, stl_dst);
+	if (fwrite(&attributes, 2, 1, stl_dst) != 1) {
+		return 1;
+	}
+	
+	return 0;
 }
 
 int tmWriteFaceToSTL(FILE *stl_dst, tm_face *face, tm_stl_mode mode) {
