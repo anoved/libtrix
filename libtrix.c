@@ -52,13 +52,23 @@ int tmWriteMeshHeaderASCII(FILE *stl_dst, tm_mesh *mesh) {
 	// not specified in http://www.ennex.com/~fabbers/StL.asp
 	// so be conservative (or look for conventions elsewhere)
 	// (consider using mesh->name instead of fixed name)
-	fprintf(stl_dst, "solid MESH\n");
+	
+	if (fprintf(stl_dst, "solid MESH\n") < 0) {
+		return 1;
+	}
+	
 	return 0;
 }
 
 int tmWriteMeshFooterASCII(FILE *stl_dst, tm_mesh *mesh) {
-	fprintf(stl_dst, "endsolid MESH\n");
+	
+	if (fprintf(stl_dst, "endsolid MESH\n") < 0) {
+		return 1;
+	}
+	
+	return 0;
 }
+
 
 int tmWriteMeshHeader(FILE *stl_dst, tm_mesh *mesh, tm_stl_mode mode) {
 	return (mode == TM_STL_ASCII
