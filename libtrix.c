@@ -134,19 +134,27 @@ int tmWriteFaceToSTL(FILE *stl_dst, tm_face *face, tm_stl_mode mode) {
 int tmWriteMeshToSTL(FILE *stl_dst, tm_mesh *mesh, tm_stl_mode mode) {
 	tm_face *face;
 	
-	// sanity check stl_dst and mesh
+	if (mesh == NULL) {
+		return 1;
+	}
 	
-	tmWriteMeshHeader(stl_dst, mesh, mode);
+	if (tmWriteMeshHeader(stl_dst, mesh, mode)) {
+		return 1;
+	}
 	
 	face = mesh->first;
 	while (face != NULL) {
 		
-		tmWriteFaceToSTL(stl_dst, face, mode);
+		if (tmWriteFaceToSTL(stl_dst, face, mode)) {
+			return 1;
+		}
 		
 		face = face->next;
 	}
 	
-	tmWriteMeshFooter(stl_dst, mesh, mode);
+	if (tmWriteMeshFooter(stl_dst, mesh, mode)) {
+		return 1;
+	}
 	
 	return 0;
 }
