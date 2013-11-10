@@ -1,7 +1,7 @@
 
 #include "libtrix.h"
 
-unsigned long tmMeshFacecount(trix_mesh *mesh) {
+unsigned long trixFacecount(trix_mesh *mesh) {
 	unsigned long count;
 	trix_face *face;
 	
@@ -19,7 +19,7 @@ unsigned long tmMeshFacecount(trix_mesh *mesh) {
 	return count;
 }
 
-int tmWriteMeshHeaderBinary(FILE *stl_dst, trix_mesh *mesh) {
+int trixWriteHeaderBinary(FILE *stl_dst, trix_mesh *mesh) {
 	char header[80];
 	
 	if (mesh == NULL) {
@@ -42,7 +42,7 @@ int tmWriteMeshHeaderBinary(FILE *stl_dst, trix_mesh *mesh) {
 	return 0;
 }
 
-int tmWriteMeshHeaderASCII(FILE *stl_dst, trix_mesh *mesh) {
+int trixWriteHeaderASCII(FILE *stl_dst, trix_mesh *mesh) {
 	
 	if (mesh == NULL) {
 		return 1;
@@ -60,7 +60,13 @@ int tmWriteMeshHeaderASCII(FILE *stl_dst, trix_mesh *mesh) {
 	return 0;
 }
 
-int tmWriteMeshFooterASCII(FILE *stl_dst, trix_mesh *mesh) {
+int trixWriteHeader(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode) {
+	return (mode == TM_STL_ASCII
+			? trixWriteHeaderASCII(stl_dst, mesh)
+			: trixWriteHeaderBinary(stl_dst, mesh));
+}
+
+int trixWriteFooterASCII(FILE *stl_dst, trix_mesh *mesh) {
 	
 	if (fprintf(stl_dst, "endsolid MESH\n") < 0) {
 		return 1;
@@ -69,14 +75,7 @@ int tmWriteMeshFooterASCII(FILE *stl_dst, trix_mesh *mesh) {
 	return 0;
 }
 
-
-int tmWriteMeshHeader(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode) {
-	return (mode == TM_STL_ASCII
-			? tmWriteMeshHeaderASCII(stl_dst, mesh)
-			: tmWriteMeshHeaderBinary(stl_dst, mesh));
-}
-
-int tmWriteMeshFooter(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode) {
+int trixWriteFooter(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode) {
 	if (mode == TM_STL_ASCII) {
 		return tmWriteMeshFooterASCII(stl_dst, mesh);
 	}
@@ -84,8 +83,7 @@ int tmWriteMeshFooter(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode) {
 	return 0;
 }
 
-
-int tmWriteFaceToSTLASCII(FILE *stl_dst, trix_face *face) {
+int trixWriteFaceASCII(FILE *stl_dst, trix_face *face) {
 	
 	if (face == NULL) {
 		return 1;
@@ -109,7 +107,7 @@ int tmWriteFaceToSTLASCII(FILE *stl_dst, trix_face *face) {
 	return 0;
 }
 
-int tmWriteFaceToSTLBinary(FILE *stl_dst, trix_face *face) {
+int trixWriteFaceBinary(FILE *stl_dst, trix_face *face) {
 	unsigned short attributes = 0;
 	
 	// triangle struct is 12 floats in sequence needed for output!
@@ -124,42 +122,42 @@ int tmWriteFaceToSTLBinary(FILE *stl_dst, trix_face *face) {
 	return 0;
 }
 
-int tmWriteFaceToSTL(FILE *stl_dst, trix_face *face, trix_stl_mode mode) {
+int trixWriteFace(FILE *stl_dst, trix_face *face, trix_stl_mode mode) {
 	return (mode == TM_STL_ASCII
-			? tmWriteFaceToSTLASCII(stl_dst, face)
-			: tmWriteFaceToSTLBinary(stl_dst, face));
+			? trixWriteFaceASCII(stl_dst, face)
+			: trixWriteFaceBinary(stl_dst, face));
 }
 
 // stl_dst is assumed to be open and ready for writing
-int tmWriteMeshToSTL(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode) {
+int trixWrite(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode) {
 	trix_face *face;
 	
 	if (mesh == NULL) {
 		return 1;
 	}
 	
-	if (tmWriteMeshHeader(stl_dst, mesh, mode)) {
+	if (trixWriteHeader(stl_dst, mesh, mode)) {
 		return 1;
 	}
 	
 	face = mesh->first;
 	while (face != NULL) {
 		
-		if (tmWriteFaceToSTL(stl_dst, face, mode)) {
+		if (trixWriteFace(stl_dst, face, mode)) {
 			return 1;
 		}
 		
 		face = face->next;
 	}
 	
-	if (tmWriteMeshFooter(stl_dst, mesh, mode)) {
+	if (trixWriteFooter(stl_dst, mesh, mode)) {
 		return 1;
 	}
 	
 	return 0;
 }
 
-int tmAddTriangleToMesh(trix_mesh *mesh, trix_triangle triangle) {
+int trixAddTriangle(trix_mesh *mesh, trix_triangle triangle) {
 	trix_face *face;
 	
 	if (mesh == NULL) {
@@ -183,12 +181,13 @@ int tmAddTriangleToMesh(trix_mesh *mesh, trix_triangle triangle) {
 		mesh->last = face;
 	}
 	
-	// perhaps useful to return pointer to new face or something?
+	mesh->facecount += 1;
 	
 	return 0;
 }
 
-void tmReleaseMesh(trix_mesh *mesh) {
+
+void trixRelease(trix_mesh *mesh) {
 
 	trix_face *face, *nextface;
 	
