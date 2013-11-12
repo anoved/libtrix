@@ -34,9 +34,18 @@ typedef struct {
 // output stl mode
 // binary is more compact; ascii is human readable
 typedef enum {
-	TM_STL_BINARY,
-	TM_STL_ASCII
+	TRIX_STL_BINARY,
+	TRIX_STL_ASCII
 } trix_stl_mode;
+
+// or also cw/ccw options
+/* instead of different reset/recalculate functions,
+ * one normal resetter that takes a mode switch:
+typedef enum {
+	TRIX_NORMAL_IMPLICIT,
+	TRIX_NORMAL_EXPLICIT
+} trix_normal_mode;
+*/
 
 // creates empty new mesh
 trix_mesh *trixCreate(void);
@@ -50,8 +59,9 @@ trix_mesh *trixRead(const char *src_path);
 // free memory associated with mesh (disassembles face list)
 void trixRelease(trix_mesh *mesh);
 
-// updates triangle's n vector as unit normal of vertices a, b, c
-//int tmComputeTriangleNormal(trix_triangle *triangle);
+int trixResetNormals(trix_mesh *mesh);
+
+int trixRecalculateNormals(trix_mesh *mesh);
 
 // appends a trix_face containing triangle to the end of the mesh list
 int trixAddTriangle(trix_mesh *mesh, trix_triangle triangle);
@@ -59,7 +69,6 @@ int trixAddTriangle(trix_mesh *mesh, trix_triangle triangle);
 // mesh facecount is updated automatically by trixAddTriangle,
 // but as a utility trixFacecount will double-check the count
 unsigned long trixFacecount(trix_mesh *mesh);
-
 
 // CSG operations
 

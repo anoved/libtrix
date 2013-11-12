@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "libtrix.h"
 
@@ -64,7 +65,7 @@ static int trixWriteHeaderASCII(FILE *stl_dst, trix_mesh *mesh) {
 }
 
 static int trixWriteHeader(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode) {
-	return (mode == TM_STL_ASCII
+	return (mode == TRIX_STL_ASCII
 			? trixWriteHeaderASCII(stl_dst, mesh)
 			: trixWriteHeaderBinary(stl_dst, mesh));
 }
@@ -83,7 +84,7 @@ static int trixWriteFooterASCII(FILE *stl_dst, trix_mesh *mesh) {
 }
 
 static int trixWriteFooter(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode) {
-	if (mode == TM_STL_ASCII) {
+	if (mode == TRIX_STL_ASCII) {
 		return trixWriteFooterASCII(stl_dst, mesh);
 	}
 	// no footer in binary mode
@@ -130,7 +131,7 @@ static int trixWriteFaceBinary(FILE *stl_dst, trix_face *face) {
 }
 
 static int trixWriteFace(FILE *stl_dst, trix_face *face, trix_stl_mode mode) {
-	return (mode == TM_STL_ASCII
+	return (mode == TRIX_STL_ASCII
 			? trixWriteFaceASCII(stl_dst, face)
 			: trixWriteFaceBinary(stl_dst, face));
 }
@@ -329,6 +330,8 @@ int trixAddTriangle(trix_mesh *mesh, trix_triangle triangle) {
 	face->triangle = triangle;
 	face->next = NULL;
 	
+	// consider using trixRecalculateTriangleNormal here
+	
 	if (mesh->last == NULL) {
 		// this is the first face
 		mesh->first = face;
@@ -356,6 +359,92 @@ trix_mesh *trixCreate(void) {
 	mesh->facecount = 0;
 	
 	return mesh;
+}
+
+// returns pointer to the reset normal vector
+static void trixResetTriangleNormal(trix_triangle *triangle) {
+	
+	if (triangle == NULL) {
+		return;
+	}
+	
+	triangle->n.x = 0.0;
+	triangle->n.y = 0.0;
+	triangle->n.z = 0.0;
+}
+
+int trixResetNormals(trix_mesh *mesh) {
+	trix_face *face;
+	
+	if (mesh == NULL) {
+		return 1;
+	}
+	
+	face = mesh->first;
+	while (face != NULL) {
+		trixResetTriangleNormal(&face->triangle);
+		face = face->next;
+	}
+	
+	return 0;
+}
+
+// iteratemeshface function that takes callback function pointer to apply to each face/tri?
+// so clear how appropriate OOP is for some tasks, like these geometry operations
+
+static void vertexDifference(trix_vertex *a, trix_vertex *b, trix_vertex *result) {
+	result->x = b->x - a->x;
+	result->y = b->y - a->y;
+	result->z = b->z - a->z;
+}
+
+static void vertexCrossProduct(trix_vertex *a, trix_vertex *b, trix_vertex *result) {
+	result->x = a->y * b->z - a->z * b->y;
+	result->y = a->z * b->x - a->x * b->z;
+	result->z = a->x * b->y - a->y * b->x;
+}
+
+static float vertexMagnitude(trix_vertex *v) {
+	return sqrtf((v->x * v->x) + (v->y * v->y) + (v->z * v->z));
+}
+
+static void trixRecalculateTriangleNormal(trix_triangle *triangle) {
+	
+	trix_vertex u, v, n;
+	float mag;
+	
+	if (triangle == NULL) {
+		return;
+	}
+
+	vertexDifference(&triangle->a, &triangle->b, &u);
+	vertexDifference(&triangle->b, &triangle->c, &v);
+	vertexCrossProduct(&u, &v, &n);
+	
+	mag = vertexMagnitude(&n);
+	n.x /= mag;
+	n.y /= mag;
+	n.z /= mag;
+	
+	triangle->n.x = n.x;
+	triangle->n.y = n.y;
+	triangle->n.z = n.z;
+}
+
+int trixRecalculateNormals(trix_mesh *mesh) {
+	trix_face *face;
+	
+	if (mesh == NULL) {
+		return 1;
+	}
+	
+	face = mesh->first;
+	while (face != NULL) {
+		trixRecalculateTriangleNormal(&face->triangle);
+		face = face->next;
+	}
+	
+	return 0;
 }
 
 void trixRelease(trix_mesh *mesh) {
