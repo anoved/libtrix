@@ -235,10 +235,61 @@ static trix_mesh *trixReadBinary(FILE *stl_src) {
 	return mesh;
 }
 
-// read stl data from stl_src and populate a new trix_mesh, which is returned
+static int trixReadTriangleASCII(FILE *stl_src, trix_triangle *triangle) {
+	// fragile!
+	if (fscanf(stl_src,
+			"facet normal %20f %20f %20f\n"
+			"outer loop\n"
+			"vertex %20f %20f %20f\n"
+			"vertex %20f %20f %20f\n"
+			"vertex %20f %20f %20f\n"
+			"endloop\n"
+			"endfacet\n",
+			&triangle->n.x, &triangle->n.y, &triangle->n.z,
+			&triangle->a.x, &triangle->a.y, &triangle->a.z,
+			&triangle->b.x, &triangle->b.y, &triangle->b.z,
+			&triangle->c.x, &triangle->c.y, &triangle->c.z) != 12) {
+		return 1;
+	}
+	
+	return 0;
+}
+
+static trix_mesh *trixReadASCII(FILE *stl_src) {
+	trix_mesh *mesh;
+	trix_triangle triangle;
+	fpos_t p;
+	
+	mesh = trixCreate();
+	if (mesh == NULL) {
+		return NULL;
+	}
+	
+	// expect but discard a solid name
+	fscanf(stl_src, "solid %*100s\n");
+	fgetpos(stl_src, &p);
+	
+	while (trixReadTriangleASCII(stl_src, &triangle) == 0) {
+		fgetpos(stl_src, &p);
+		if (trixAddTriangle(mesh, triangle)) {
+			trixRelease(mesh);
+			return NULL;
+		}
+	}
+	
+	// read the footer; a bit pedantic since data has already been read
+	fsetpos(stl_src, &p);
+	if (fscanf(stl_src, "endsolid %*100s\n") == EOF) {
+		printf("failed to read footer\n");
+	}
+	
+	return mesh;
+}
+
 trix_mesh *trixRead(const char *src_path) {
 	trix_mesh *mesh;
 	FILE *stl_src;
+	char header[5];
 	
 	if (src_path == NULL) {
 		stl_src = stdin;
@@ -246,10 +297,18 @@ trix_mesh *trixRead(const char *src_path) {
 		return NULL;
 	}
 	
-	// if stl_src begins with "solid", interpret it as an ascii STL
-	// otherwise, interpret it as a binary STL (reset fp to start)
+	if (fread(header, 1, 5, stl_src) != 5) {
+		trixCloseInput(stl_src);
+		return NULL;
+	}
 	
-	mesh = trixReadBinary(stl_src);
+	rewind(stl_src);
+	
+	if (strncmp(header, "solid", 5) == 0) {
+		mesh = trixReadASCII(stl_src);
+	} else {
+		mesh = trixReadBinary(stl_src);
+	}
 	
 	trixCloseInput(stl_src);
 	return mesh;
