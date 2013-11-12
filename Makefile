@@ -1,3 +1,4 @@
+CC = gcc
 PREFIX = /usr/local
 CFLAGS = -Wall
 
@@ -6,7 +7,7 @@ CFLAGS = -Wall
 default: lib
 
 libtrix.o: libtrix.c libtrix.h
-	gcc $(CFLAGS) -c libtrix.c
+	$(CC) $(CFLAGS) -c libtrix.c
 
 lib: libtrix.a
 
