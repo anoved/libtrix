@@ -14,7 +14,7 @@ typedef struct {
 } trix_vertex;
 
 typedef struct {
-	trix_vertex a, b, c, n;
+	trix_vertex n, a, b, c;
 } trix_triangle;
 
 struct trix_face_node {
