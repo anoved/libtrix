@@ -1,13 +1,8 @@
 #ifndef _LIBTRIX_H_
 #define _LIBTRIX_H_
 
-// rudimentary triangle mesh library
-// basic features shared between stl generating toys
-
-// have some simple error logging/lookup system
-// if functions return an error, they just stash
-// the message in a variable which caller can query?
-// unless standard error functions cover that use
+#define TRIX_MESH_NAME_MAX 80
+#define TRIX_MESH_NAME_DEFAULT "libtrix"
 
 typedef struct {
 	float x, y, z;
@@ -24,10 +19,8 @@ struct trix_face_node {
 typedef struct trix_face_node trix_face;
 
 typedef struct {
-	// name, to be used for ascii solid name
+	char name[TRIX_MESH_NAME_MAX];
 	trix_face *first, *last;
-	// facecount should be maintained as mesh is assembled,
-	// but can be recalculated by traversing list
 	unsigned long facecount;
 } trix_mesh;
 
@@ -47,8 +40,8 @@ typedef enum {
 } trix_normal_mode;
 */
 
-// creates empty new mesh
-trix_mesh *trixCreate(void);
+// If name is NULL, default mesh name will be used.
+trix_mesh *trixCreate(const char *name);
 
 // output mesh to dst_path format indicated by mode. writes to stdout if dst_path is null. returns nonzero on error
 int trixWrite(const char *dst_path, trix_mesh *mesh, trix_stl_mode mode);

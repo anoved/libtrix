@@ -30,8 +30,10 @@ static int trixWriteHeaderBinary(FILE *stl_dst, trix_mesh *mesh) {
 		return 1;
 	}
 	
-	// could put some mesh metadata in header (facecount, provenance, etc)
-	strncpy(header, "Binary STL", 80);
+	// for now, just writing mesh name to header.
+	// should check that name doesn't begin with "solid"
+	strncpy(header, mesh->name, 80);
+	header[79] = '\0';
 	
 	if (fwrite(header, 80, 1, stl_dst) != 1) {
 		// failed to write header
@@ -52,12 +54,7 @@ static int trixWriteHeaderASCII(FILE *stl_dst, trix_mesh *mesh) {
 		return 1;
 	}
 	
-	// what are the length and content constraints on name?
-	// not specified in http://www.ennex.com/~fabbers/StL.asp
-	// so be conservative (or look for conventions elsewhere)
-	// (consider using mesh->name instead of fixed name)
-	
-	if (fprintf(stl_dst, "solid MESH\n") < 0) {
+	if (fprintf(stl_dst, "solid %s\n", mesh->name) < 0) {
 		return 1;
 	}
 	
@@ -76,7 +73,7 @@ static int trixWriteFooterASCII(FILE *stl_dst, trix_mesh *mesh) {
 		return 1;
 	}
 	
-	if (fprintf(stl_dst, "endsolid MESH\n") < 0) {
+	if (fprintf(stl_dst, "endsolid %s\n", mesh->name) < 0) {
 		return 1;
 	}
 	
@@ -207,7 +204,7 @@ static trix_mesh *trixReadBinary(FILE *stl_src) {
 		return NULL;
 	}
 	
-	mesh = trixCreate();
+	mesh = trixCreate(NULL);
 	if (mesh == NULL) {
 		return NULL;
 	}
@@ -261,7 +258,7 @@ static trix_mesh *trixReadASCII(FILE *stl_src) {
 	trix_triangle triangle;
 	fpos_t p;
 	
-	mesh = trixCreate();
+	mesh = trixCreate(NULL);
 	if (mesh == NULL) {
 		return NULL;
 	}
@@ -346,12 +343,19 @@ int trixAddTriangle(trix_mesh *mesh, trix_triangle triangle) {
 	return 0;
 }
 
-trix_mesh *trixCreate(void) {
+trix_mesh *trixCreate(const char *name) {
 	trix_mesh *mesh;
 	
 	mesh = (trix_mesh *)malloc(sizeof(trix_mesh));
 	if (mesh == NULL) {
 		return NULL;
+	}
+	
+	if (name == NULL) {
+		strncpy(mesh->name, TRIX_MESH_NAME_DEFAULT, TRIX_MESH_NAME_MAX);
+	} else {
+		strncpy(mesh->name, name, TRIX_MESH_NAME_MAX);
+		mesh->name[TRIX_MESH_NAME_MAX - 1] = '\0';
 	}
 	
 	mesh->first = NULL;
