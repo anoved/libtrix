@@ -58,6 +58,6 @@ trix_result trixAddTriangle(trix_mesh *mesh, const trix_triangle *triangle);
 
 // mesh facecount is updated automatically by trixAddTriangle,
 // but as a utility trixFacecount will double-check the count
-trix_result trixFacecount(trix_mesh *mesh, unsigned long *dst_count);
+trix_result trixFacecount(const trix_mesh *mesh, unsigned long *dst_count);
 
 #endif
