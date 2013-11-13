@@ -476,20 +476,6 @@ trix_result trixRecalculateNormals(trix_mesh *mesh) {
 	return TRIX_OK;
 }
 
-/*trix_result trixRecalculateFace(trix_face *face) {
-	if (face == NULL) {
-		return TRIX_ERR_ARG;
-	}
-	
-	trixRecalculateTriangleNormal(&face->triangle);
-	
-	return TRIX_OK;
-}
-
-trix_result trixRecalculateNormalsApplied(trix_mesh *mesh) {
-	return trixApply(mesh, trixRecalculateFace);
-}*/
-
 trix_result trixRelease(trix_mesh *mesh) {
 
 	trix_face *face, *nextface;
