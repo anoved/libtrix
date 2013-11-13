@@ -449,7 +449,7 @@ static trix_result trixRecalculateFaceNormal(trix_face *face) {
 	}
 	
 	vector_difference(&face->triangle.a, &face->triangle.b, &u);
-	vector_difference(&face->triangle.b, &face->triangle.c, &u);
+	vector_difference(&face->triangle.b, &face->triangle.c, &v);
 	vector_crossproduct(&u, &v, &cp);
 	vector_unitvector(&cp, &n);
 	
