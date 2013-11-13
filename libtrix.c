@@ -221,7 +221,7 @@ static trix_result trixReadBinary(FILE *stl_src, trix_mesh **dst_mesh) {
 			return TRIX_ERR_FILE;
 		}
 		
-		if (trixAddTriangle(mesh, triangle)) {
+		if (trixAddTriangle(mesh, &triangle)) {
 			(void)trixRelease(mesh);
 			return TRIX_ERR_FILE;
 		}
@@ -267,7 +267,7 @@ static trix_result trixReadASCII(FILE *stl_src, trix_mesh **dst_mesh) {
 	
 	while (trixReadTriangleASCII(stl_src, &triangle) == TRIX_OK) {
 		fgetpos(stl_src, &p);
-		if ((rr = trixAddTriangle(mesh, triangle)) != TRIX_OK) {
+		if ((rr = trixAddTriangle(mesh, &triangle)) != TRIX_OK) {
 			(void)trixRelease(mesh);
 			return rr;
 		}
@@ -318,7 +318,7 @@ trix_result trixRead(const char *src_path, trix_mesh **dst_mesh) {
 	return TRIX_OK;
 }
 
-trix_result trixAddTriangle(trix_mesh *mesh, trix_triangle triangle) {
+trix_result trixAddTriangle(trix_mesh *mesh, const trix_triangle *triangle) {
 	trix_face *face;
 	
 	if (mesh == NULL) {
@@ -329,7 +329,7 @@ trix_result trixAddTriangle(trix_mesh *mesh, trix_triangle triangle) {
 		return TRIX_ERR_MEM;
 	}
 	
-	face->triangle = triangle;
+	face->triangle = *triangle;
 	face->next = NULL;
 	
 	// consider using trixRecalculateTriangleNormal here
