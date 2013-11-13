@@ -5,7 +5,7 @@
 
 #include "libtrix.h"
 
-trix_result trixApply(trix_mesh *mesh, trix_iterator func) {
+trix_result trixApply(trix_mesh *mesh, trix_function func) {
 	trix_face *face, *next;
 	trix_result rr;
 	
@@ -461,7 +461,7 @@ static trix_result trixRecalculateFaceNormal(trix_face *face) {
 }
 
 trix_result trixRecalculateNormals(trix_mesh *mesh) {
-	return trixApply(mesh, (trix_iterator)trixRecalculateFaceNormal);
+	return trixApply(mesh, (trix_function)trixRecalculateFaceNormal);
 }
 
 trix_result trixRelease(trix_mesh *mesh) {

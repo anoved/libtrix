@@ -38,8 +38,8 @@ typedef struct {
 } trix_mesh;
 
 // use trixApply to apply func to each face of mesh
-typedef trix_result (*trix_iterator)(trix_face *face);
-trix_result trixApply(trix_mesh *mesh, trix_iterator func);
+typedef trix_result (*trix_function)(trix_face *face);
+trix_result trixApply(trix_mesh *mesh, trix_function func);
 
 // If name is NULL, default mesh name will be used.
 trix_result trixCreate(const char *name, trix_mesh **dst_mesh);
