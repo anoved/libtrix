@@ -24,11 +24,11 @@ trix_result trixFacecount(const trix_mesh *mesh, unsigned long *dst_count) {
 	return TRIX_OK;
 }
 
-static int trixWriteHeaderBinary(FILE *stl_dst, const trix_mesh *mesh) {
+static trix_result trixWriteHeaderBinary(FILE *stl_dst, const trix_mesh *mesh) {
 	char header[80];
 	
 	if (mesh == NULL) {
-		return 1;
+		return TRIX_ERR_ARG;
 	}
 	
 	// for now, just writing mesh name to header.
@@ -37,62 +37,60 @@ static int trixWriteHeaderBinary(FILE *stl_dst, const trix_mesh *mesh) {
 	header[79] = '\0';
 	
 	if (fwrite(header, 80, 1, stl_dst) != 1) {
-		// failed to write header
-		return 1;
+		return TRIX_ERR_FILE;
 	}
 	
 	if (fwrite(&mesh->facecount, 4, 1, stl_dst) != 1) {
-		// failed to write face count
-		return 1;
+		return TRIX_ERR_FILE;
 	}
 	
-	return 0;
+	return TRIX_OK;
 }
 
-static int trixWriteHeaderASCII(FILE *stl_dst, const trix_mesh *mesh) {
+static trix_result trixWriteHeaderASCII(FILE *stl_dst, const trix_mesh *mesh) {
 	
 	if (mesh == NULL) {
-		return 1;
+		return TRIX_ERR_ARG;
 	}
 	
 	if (fprintf(stl_dst, "solid %s\n", mesh->name) < 0) {
-		return 1;
+		return TRIX_ERR_FILE;
 	}
 	
-	return 0;
+	return TRIX_OK;
 }
 
-static int trixWriteHeader(FILE *stl_dst, const trix_mesh *mesh, trix_stl_mode mode) {
+static trix_result trixWriteHeader(FILE *stl_dst, const trix_mesh *mesh, trix_stl_mode mode) {
 	return (mode == TRIX_STL_ASCII
 			? trixWriteHeaderASCII(stl_dst, mesh)
 			: trixWriteHeaderBinary(stl_dst, mesh));
 }
 
-static int trixWriteFooterASCII(FILE *stl_dst, const trix_mesh *mesh) {
+static trix_result trixWriteFooterASCII(FILE *stl_dst, const trix_mesh *mesh) {
 	
 	if (mesh == NULL) {
-		return 1;
+		return TRIX_ERR_ARG;
 	}
 	
 	if (fprintf(stl_dst, "endsolid %s\n", mesh->name) < 0) {
-		return 1;
+		return TRIX_ERR_FILE;
 	}
 	
-	return 0;
+	return TRIX_OK;
 }
 
-static int trixWriteFooter(FILE *stl_dst, const trix_mesh *mesh, trix_stl_mode mode) {
+static trix_result trixWriteFooter(FILE *stl_dst, const trix_mesh *mesh, trix_stl_mode mode) {
 	if (mode == TRIX_STL_ASCII) {
 		return trixWriteFooterASCII(stl_dst, mesh);
 	}
 	// no footer in binary mode
-	return 0;
+	return TRIX_OK;
 }
 
-static int trixWriteFaceASCII(FILE *stl_dst, trix_face *face) {
+static trix_result trixWriteFaceASCII(FILE *stl_dst, trix_face *face) {
 	
 	if (face == NULL) {
-		return 1;
+		return TRIX_ERR_ARG;
 	}
 	
 	if (fprintf(stl_dst,
@@ -107,28 +105,28 @@ static int trixWriteFaceASCII(FILE *stl_dst, trix_face *face) {
 			face->triangle.a.x, face->triangle.a.y, face->triangle.a.z,
 			face->triangle.b.x, face->triangle.b.y, face->triangle.b.z,
 			face->triangle.c.x, face->triangle.c.y, face->triangle.c.z) < 0) {
-		return 1;
+		return TRIX_ERR_FILE;
 	}
 	
-	return 0;
+	return TRIX_OK;
 }
 
-static int trixWriteFaceBinary(FILE *stl_dst, trix_face *face) {
+static trix_result trixWriteFaceBinary(FILE *stl_dst, trix_face *face) {
 	unsigned short attributes = 0;
 	
 	// triangle struct is 12 floats in sequence needed for output!
 	if (fwrite(&face->triangle, 4, 12, stl_dst) != 12) {
-		return 1;
+		return TRIX_ERR_FILE;
 	}
 	
 	if (fwrite(&attributes, 2, 1, stl_dst) != 1) {
-		return 1;
+		return TRIX_ERR_FILE;
 	}
 	
-	return 0;
+	return TRIX_OK;
 }
 
-static int trixWriteFace(FILE *stl_dst, trix_face *face, trix_stl_mode mode) {
+static trix_result trixWriteFace(FILE *stl_dst, trix_face *face, trix_stl_mode mode) {
 	return (mode == TRIX_STL_ASCII
 			? trixWriteFaceASCII(stl_dst, face)
 			: trixWriteFaceBinary(stl_dst, face));
@@ -150,6 +148,7 @@ static void trixCloseInput(FILE *src) {
 trix_result trixWrite(const char *dst_path, const trix_mesh *mesh, trix_stl_mode mode) {
 	trix_face *face;
 	FILE *stl_dst;
+	trix_result rr;
 	
 	if (mesh == NULL) {
 		return TRIX_ERR_ARG;
@@ -161,25 +160,25 @@ trix_result trixWrite(const char *dst_path, const trix_mesh *mesh, trix_stl_mode
 		return TRIX_ERR_FILE;
 	}
 	
-	if (trixWriteHeader(stl_dst, mesh, mode) != 0) {
+	if ((rr = trixWriteHeader(stl_dst, mesh, mode)) != TRIX_OK) {
 		trixCloseOutput(stl_dst);
-		return TRIX_ERR_FILE;
+		return rr;
 	}
 	
 	face = mesh->first;
 	while (face != NULL) {
 		
-		if (trixWriteFace(stl_dst, face, mode) != 0) {
+		if ((rr = trixWriteFace(stl_dst, face, mode)) != TRIX_OK) {
 			trixCloseOutput(stl_dst);
-			return TRIX_ERR_FILE;
+			return rr;
 		}
 		
 		face = face->next;
 	}
 	
-	if (trixWriteFooter(stl_dst, mesh, mode) != 0) {
+	if ((rr = trixWriteFooter(stl_dst, mesh, mode)) != TRIX_OK) {
 		trixCloseOutput(stl_dst);
-		return TRIX_ERR_FILE;
+		return rr;
 	}
 	
 	trixCloseOutput(stl_dst);
