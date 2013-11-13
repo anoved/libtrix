@@ -5,12 +5,12 @@
 
 #include "libtrix.h"
 
-unsigned long trixFacecount(trix_mesh *mesh) {
+trix_result trixFacecount(trix_mesh *mesh, unsigned long *dst_count) {
 	unsigned long count;
 	trix_face *face;
 	
 	if (mesh == NULL) {
-		return 0;
+		return TRIX_ERR_ARG;
 	}
 	
 	count = 0;
@@ -20,10 +20,11 @@ unsigned long trixFacecount(trix_mesh *mesh) {
 		face = face->next;
 	}
 	
-	return count;
+	*dst_count = count;
+	return TRIX_OK;
 }
 
-static int trixWriteHeaderBinary(FILE *stl_dst, trix_mesh *mesh) {
+static int trixWriteHeaderBinary(FILE *stl_dst, const trix_mesh *mesh) {
 	char header[80];
 	
 	if (mesh == NULL) {
@@ -48,7 +49,7 @@ static int trixWriteHeaderBinary(FILE *stl_dst, trix_mesh *mesh) {
 	return 0;
 }
 
-static int trixWriteHeaderASCII(FILE *stl_dst, trix_mesh *mesh) {
+static int trixWriteHeaderASCII(FILE *stl_dst, const trix_mesh *mesh) {
 	
 	if (mesh == NULL) {
 		return 1;
@@ -61,13 +62,13 @@ static int trixWriteHeaderASCII(FILE *stl_dst, trix_mesh *mesh) {
 	return 0;
 }
 
-static int trixWriteHeader(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode) {
+static int trixWriteHeader(FILE *stl_dst, const trix_mesh *mesh, trix_stl_mode mode) {
 	return (mode == TRIX_STL_ASCII
 			? trixWriteHeaderASCII(stl_dst, mesh)
 			: trixWriteHeaderBinary(stl_dst, mesh));
 }
 
-static int trixWriteFooterASCII(FILE *stl_dst, trix_mesh *mesh) {
+static int trixWriteFooterASCII(FILE *stl_dst, const trix_mesh *mesh) {
 	
 	if (mesh == NULL) {
 		return 1;
@@ -80,7 +81,7 @@ static int trixWriteFooterASCII(FILE *stl_dst, trix_mesh *mesh) {
 	return 0;
 }
 
-static int trixWriteFooter(FILE *stl_dst, trix_mesh *mesh, trix_stl_mode mode) {
+static int trixWriteFooter(FILE *stl_dst, const trix_mesh *mesh, trix_stl_mode mode) {
 	if (mode == TRIX_STL_ASCII) {
 		return trixWriteFooterASCII(stl_dst, mesh);
 	}
@@ -146,24 +147,23 @@ static void trixCloseInput(FILE *src) {
 }
 
 // stl_dst is assumed to be open and ready for writing
-int trixWrite(const char *dst_path, trix_mesh *mesh, trix_stl_mode mode) {
+trix_result trixWrite(const char *dst_path, const trix_mesh *mesh, trix_stl_mode mode) {
 	trix_face *face;
 	FILE *stl_dst;
 	
 	if (mesh == NULL) {
-		return 1;
+		return TRIX_ERR_ARG;
 	}
 	
 	if (dst_path == NULL) {
 		stl_dst = stdout;
 	} else if ((stl_dst = fopen(dst_path, "w")) == NULL) {
-		// failed to open dst
-		return 1;
+		return TRIX_ERR_FILE;
 	}
 	
 	if (trixWriteHeader(stl_dst, mesh, mode) != 0) {
 		trixCloseOutput(stl_dst);
-		return 1;
+		return TRIX_ERR_FILE;
 	}
 	
 	face = mesh->first;
@@ -171,7 +171,7 @@ int trixWrite(const char *dst_path, trix_mesh *mesh, trix_stl_mode mode) {
 		
 		if (trixWriteFace(stl_dst, face, mode) != 0) {
 			trixCloseOutput(stl_dst);
-			return 1;
+			return TRIX_ERR_FILE;
 		}
 		
 		face = face->next;
@@ -179,34 +179,31 @@ int trixWrite(const char *dst_path, trix_mesh *mesh, trix_stl_mode mode) {
 	
 	if (trixWriteFooter(stl_dst, mesh, mode) != 0) {
 		trixCloseOutput(stl_dst);
-		return 1;
+		return TRIX_ERR_FILE;
 	}
 	
 	trixCloseOutput(stl_dst);
-	return 0;
+	return TRIX_OK;
 }
 
-static trix_mesh *trixReadBinary(FILE *stl_src) {
-	
+static trix_result trixReadBinary(FILE *stl_src, trix_mesh **dst_mesh) {
 	unsigned long facecount, f;
 	trix_triangle triangle;
 	unsigned short attribute;
 	trix_mesh *mesh;
+	trix_result rr;
 	
 	// fread instead to get header
 	if (fseek(stl_src, 80, SEEK_SET) != 0) {
-		// seek failure
-		return NULL;
+		return TRIX_ERR_FILE;
 	}
 	
 	if (fread(&facecount, 4, 1, stl_src) != 1) {
-		// facecount read failure
-		return NULL;
+		return TRIX_ERR_FILE;
 	}
 	
-	mesh = trixCreate(NULL);
-	if (mesh == NULL) {
-		return NULL;
+	if ((rr = trixCreate(NULL, &mesh)) != TRIX_OK) {
+		return rr;
 	}
 	
 	// consider succeeding as long as we can read a whole number of faces,
@@ -215,25 +212,26 @@ static trix_mesh *trixReadBinary(FILE *stl_src) {
 	for (f = 0; f < facecount; f++) {
 		
 		if (fread(&triangle, 4, 12, stl_src) != 12) {
-			trixRelease(mesh);
-			return NULL;
+			(void)trixRelease(mesh);
+			return TRIX_ERR_FILE;
 		}
 		
 		if (fread(&attribute, 2, 1, stl_src) != 1) {
-			trixRelease(mesh);
-			return NULL;
+			(void)trixRelease(mesh);
+			return TRIX_ERR_FILE;
 		}
 		
 		if (trixAddTriangle(mesh, triangle)) {
-			trixRelease(mesh);
-			return NULL;
+			(void)trixRelease(mesh);
+			return TRIX_ERR_FILE;
 		}
 	}
 	
-	return mesh;
+	*dst_mesh = mesh;
+	return TRIX_OK;
 }
 
-static int trixReadTriangleASCII(FILE *stl_src, trix_triangle *triangle) {
+static trix_result trixReadTriangleASCII(FILE *stl_src, trix_triangle *triangle) {
 	// fragile!
 	if (fscanf(stl_src,
 			"facet normal %20f %20f %20f\n"
@@ -247,31 +245,31 @@ static int trixReadTriangleASCII(FILE *stl_src, trix_triangle *triangle) {
 			&triangle->a.x, &triangle->a.y, &triangle->a.z,
 			&triangle->b.x, &triangle->b.y, &triangle->b.z,
 			&triangle->c.x, &triangle->c.y, &triangle->c.z) != 12) {
-		return 1;
+		return TRIX_ERR_FILE;
 	}
 	
-	return 0;
+	return TRIX_OK;
 }
 
-static trix_mesh *trixReadASCII(FILE *stl_src) {
+static trix_result trixReadASCII(FILE *stl_src, trix_mesh **dst_mesh) {
 	trix_mesh *mesh;
 	trix_triangle triangle;
+	trix_result rr;
 	fpos_t p;
 	
-	mesh = trixCreate(NULL);
-	if (mesh == NULL) {
-		return NULL;
+	if ((rr = trixCreate(NULL, &mesh)) != TRIX_OK) {
+		return rr;
 	}
 	
 	// expect but discard a solid name
 	fscanf(stl_src, "solid %*100s\n");
 	fgetpos(stl_src, &p);
 	
-	while (trixReadTriangleASCII(stl_src, &triangle) == 0) {
+	while (trixReadTriangleASCII(stl_src, &triangle) == TRIX_OK) {
 		fgetpos(stl_src, &p);
-		if (trixAddTriangle(mesh, triangle)) {
-			trixRelease(mesh);
-			return NULL;
+		if ((rr = trixAddTriangle(mesh, triangle)) != TRIX_OK) {
+			(void)trixRelease(mesh);
+			return rr;
 		}
 	}
 	
@@ -281,47 +279,54 @@ static trix_mesh *trixReadASCII(FILE *stl_src) {
 		printf("failed to read footer\n");
 	}
 	
-	return mesh;
+	*dst_mesh = mesh;
+	return TRIX_OK;
 }
 
-trix_mesh *trixRead(const char *src_path) {
+trix_result trixRead(const char *src_path, trix_mesh **dst_mesh) {
 	trix_mesh *mesh;
 	FILE *stl_src;
 	char header[5];
+	trix_result rr;
 	
 	if (src_path == NULL) {
 		stl_src = stdin;
 	} else if ((stl_src = fopen(src_path, "r")) == NULL) {
-		return NULL;
+		return TRIX_ERR_FILE;
 	}
 	
 	if (fread(header, 1, 5, stl_src) != 5) {
 		trixCloseInput(stl_src);
-		return NULL;
+		return TRIX_ERR_FILE;
 	}
 	
 	rewind(stl_src);
 	
 	if (strncmp(header, "solid", 5) == 0) {
-		mesh = trixReadASCII(stl_src);
+		rr = trixReadASCII(stl_src, &mesh);
 	} else {
-		mesh = trixReadBinary(stl_src);
+		rr = trixReadBinary(stl_src, &mesh);
+	}
+	
+	if (rr != TRIX_OK) {
+		trixCloseInput(stl_src);
+		return rr;
 	}
 	
 	trixCloseInput(stl_src);
-	return mesh;
+	*dst_mesh = mesh;
+	return TRIX_OK;
 }
 
-int trixAddTriangle(trix_mesh *mesh, trix_triangle triangle) {
+trix_result trixAddTriangle(trix_mesh *mesh, trix_triangle triangle) {
 	trix_face *face;
 	
 	if (mesh == NULL) {
-		return 1;
+		return TRIX_ERR_ARG;
 	}
 	
-	face = (trix_face *)malloc(sizeof(trix_face));
-	if (face == NULL) { 
-		return 1;
+	if ((face = (trix_face *)malloc(sizeof(trix_face))) == NULL) {
+		return TRIX_ERR_MEM;
 	}
 	
 	face->triangle = triangle;
@@ -339,16 +344,14 @@ int trixAddTriangle(trix_mesh *mesh, trix_triangle triangle) {
 	}
 	
 	mesh->facecount += 1;
-	
-	return 0;
+	return TRIX_OK;
 }
 
-trix_mesh *trixCreate(const char *name) {
+trix_result trixCreate(const char *name, trix_mesh **dst_mesh) {
 	trix_mesh *mesh;
 	
-	mesh = (trix_mesh *)malloc(sizeof(trix_mesh));
-	if (mesh == NULL) {
-		return NULL;
+	if ((mesh = (trix_mesh *)malloc(sizeof(trix_mesh))) == NULL) {
+		return TRIX_ERR;
 	}
 	
 	if (name == NULL) {
@@ -362,7 +365,8 @@ trix_mesh *trixCreate(const char *name) {
 	mesh->last = NULL;
 	mesh->facecount = 0;
 	
-	return mesh;
+	*dst_mesh = mesh;
+	return TRIX_OK;
 }
 
 // returns pointer to the reset normal vector
@@ -377,11 +381,11 @@ static void trixResetTriangleNormal(trix_triangle *triangle) {
 	triangle->n.z = 0.0;
 }
 
-int trixResetNormals(trix_mesh *mesh) {
+trix_result trixResetNormals(trix_mesh *mesh) {
 	trix_face *face;
 	
 	if (mesh == NULL) {
-		return 1;
+		return TRIX_ERR_ARG;
 	}
 	
 	face = mesh->first;
@@ -390,7 +394,7 @@ int trixResetNormals(trix_mesh *mesh) {
 		face = face->next;
 	}
 	
-	return 0;
+	return TRIX_OK;
 }
 
 // iteratemeshface function that takes callback function pointer to apply to each face/tri?
@@ -435,11 +439,11 @@ static void trixRecalculateTriangleNormal(trix_triangle *triangle) {
 	triangle->n.z = n.z;
 }
 
-int trixRecalculateNormals(trix_mesh *mesh) {
+trix_result trixRecalculateNormals(trix_mesh *mesh) {
 	trix_face *face;
 	
 	if (mesh == NULL) {
-		return 1;
+		return TRIX_ERR_ARG;
 	}
 	
 	face = mesh->first;
@@ -448,15 +452,15 @@ int trixRecalculateNormals(trix_mesh *mesh) {
 		face = face->next;
 	}
 	
-	return 0;
+	return TRIX_OK;
 }
 
-void trixRelease(trix_mesh *mesh) {
+trix_result trixRelease(trix_mesh *mesh) {
 
 	trix_face *face, *nextface;
 	
 	if (mesh == NULL) {
-		return;
+		return TRIX_ERR_ARG;
 	}
 	
 	face = mesh->first;
@@ -469,4 +473,5 @@ void trixRelease(trix_mesh *mesh) {
 	
 	free(mesh);
 	mesh = NULL;
+	return TRIX_OK;
 }
