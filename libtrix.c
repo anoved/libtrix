@@ -441,37 +441,27 @@ static void vector_unitvector(const trix_vertex *v, trix_vertex *result) {
 	result->z = v->z / mag;
 }
 
-static void trixRecalculateTriangleNormal(trix_triangle *triangle) {
+static trix_result trixRecalculateFaceNormal(trix_face *face) {
 	trix_vertex u, v, cp, n;
 	
-	if (triangle == NULL) {
-		return;
-	}
-
-	vector_difference(&triangle->a, &triangle->b, &u);
-	vector_difference(&triangle->b, &triangle->c, &v);
-	vector_crossproduct(&u, &v, &cp);
-	vector_unitvector(&cp, &n);
-	
-	triangle->n.x = n.x;
-	triangle->n.y = n.y;
-	triangle->n.z = n.z;
-}
-
-trix_result trixRecalculateNormals(trix_mesh *mesh) {
-	trix_face *face;
-	
-	if (mesh == NULL) {
+	if (face == NULL) {
 		return TRIX_ERR_ARG;
 	}
 	
-	face = mesh->first;
-	while (face != NULL) {
-		trixRecalculateTriangleNormal(&face->triangle);
-		face = face->next;
-	}
+	vector_difference(&face->triangle.a, &face->triangle.b, &u);
+	vector_difference(&face->triangle.b, &face->triangle.c, &u);
+	vector_crossproduct(&u, &v, &cp);
+	vector_unitvector(&cp, &n);
+	
+	face->triangle.n.x = n.x;
+	face->triangle.n.y = n.y;
+	face->triangle.n.z = n.z;
 	
 	return TRIX_OK;
+}
+
+trix_result trixRecalculateNormals(trix_mesh *mesh) {
+	return trixApply(mesh, (trix_iterator)trixRecalculateFaceNormal);
 }
 
 trix_result trixRelease(trix_mesh *mesh) {
