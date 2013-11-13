@@ -5,6 +5,28 @@
 
 #include "libtrix.h"
 
+trix_result trixApply(trix_mesh *mesh, trix_iterator func) {
+	trix_face *face, *next;
+	trix_result rr;
+	
+	if (mesh == NULL) {
+		return TRIX_ERR_ARG;
+	}
+	
+	face = mesh->first;
+	while (face != NULL) {
+		next = face->next;
+		
+		if ((rr = (func)(face)) != TRIX_OK) {
+			return rr;
+		}
+		
+		face = next;
+	}
+	
+	return TRIX_OK;
+}
+
 trix_result trixFacecount(const trix_mesh *mesh, unsigned long *dst_count) {
 	unsigned long count;
 	trix_face *face;
@@ -453,6 +475,20 @@ trix_result trixRecalculateNormals(trix_mesh *mesh) {
 	
 	return TRIX_OK;
 }
+
+/*trix_result trixRecalculateFace(trix_face *face) {
+	if (face == NULL) {
+		return TRIX_ERR_ARG;
+	}
+	
+	trixRecalculateTriangleNormal(&face->triangle);
+	
+	return TRIX_OK;
+}
+
+trix_result trixRecalculateNormalsApplied(trix_mesh *mesh) {
+	return trixApply(mesh, trixRecalculateFace);
+}*/
 
 trix_result trixRelease(trix_mesh *mesh) {
 
