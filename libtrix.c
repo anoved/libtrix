@@ -418,42 +418,40 @@ trix_result trixResetNormals(trix_mesh *mesh) {
 	return TRIX_OK;
 }
 
-// iteratemeshface function that takes callback function pointer to apply to each face/tri?
-// so clear how appropriate OOP is for some tasks, like these geometry operations
-
-static void vertexDifference(trix_vertex *a, trix_vertex *b, trix_vertex *result) {
+// sets result to difference of vectors a and b (b - a)
+static void vector_difference(const trix_vertex *a, const trix_vertex *b, trix_vertex *result) {
 	result->x = b->x - a->x;
 	result->y = b->y - a->y;
 	result->z = b->z - a->z;
 }
 
-static void vertexCrossProduct(trix_vertex *a, trix_vertex *b, trix_vertex *result) {
+// sets result to cross product of vectors a and b (a x b)
+// https://en.wikipedia.org/wiki/Cross_product#Mnemonic
+static void vector_crossproduct(const trix_vertex *a, const trix_vertex *b, trix_vertex *result) {
 	result->x = a->y * b->z - a->z * b->y;
 	result->y = a->z * b->x - a->x * b->z;
 	result->z = a->x * b->y - a->y * b->x;
 }
 
-static float vertexMagnitude(trix_vertex *v) {
-	return sqrtf((v->x * v->x) + (v->y * v->y) + (v->z * v->z));
+// sets result to unit vector codirectional with vector v (v / ||v||)
+static void vector_unitvector(const trix_vertex *v, trix_vertex *result) {
+	float mag = sqrtf((v->x * v->x) + (v->y * v->y) + (v->z * v->z));
+	result->x = v->x / mag;
+	result->y = v->y / mag;
+	result->z = v->z / mag;
 }
 
 static void trixRecalculateTriangleNormal(trix_triangle *triangle) {
-	
-	trix_vertex u, v, n;
-	float mag;
+	trix_vertex u, v, cp, n;
 	
 	if (triangle == NULL) {
 		return;
 	}
 
-	vertexDifference(&triangle->a, &triangle->b, &u);
-	vertexDifference(&triangle->b, &triangle->c, &v);
-	vertexCrossProduct(&u, &v, &n);
-	
-	mag = vertexMagnitude(&n);
-	n.x /= mag;
-	n.y /= mag;
-	n.z /= mag;
+	vector_difference(&triangle->a, &triangle->b, &u);
+	vector_difference(&triangle->b, &triangle->c, &v);
+	vector_crossproduct(&u, &v, &cp);
+	vector_unitvector(&cp, &n);
 	
 	triangle->n.x = n.x;
 	triangle->n.y = n.y;
