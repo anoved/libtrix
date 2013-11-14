@@ -448,15 +448,21 @@ static trix_result trixRecalculateFaceNormal(trix_face *face) {
 		return TRIX_ERR_ARG;
 	}
 	
+	// vectors u and v are triangle sides ab and bc
 	vector_difference(&face->triangle.a, &face->triangle.b, &u);
 	vector_difference(&face->triangle.b, &face->triangle.c, &v);
+	
+	// the cross product of two vectors is perpendicular to both
+	// since vectors u and v both lie in the plane of triangle abc,
+	// the cross product is perpendicular to the triangle's surface
 	vector_crossproduct(&u, &v, &cp);
+	
+	// normalize the cross product to unit length to get surface normal n
 	vector_unitvector(&cp, &n);
 	
 	face->triangle.n.x = n.x;
 	face->triangle.n.y = n.y;
 	face->triangle.n.z = n.z;
-	
 	return TRIX_OK;
 }
 
