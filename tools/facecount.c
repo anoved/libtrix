@@ -6,13 +6,14 @@
 
 void PrintMeshFacecount(const char *path) {
 	trix_mesh *m;
+	trix_result r;
 	
-	if (trixRead(path, &m) != TRIX_OK) {
-		fprintf(stderr, "Cannot open %s\n", path);
+	if ((r = trixRead(path, &m)) != TRIX_OK) {
+		fprintf(stderr, "Cannot open %s (%d)\n", path, (int)r);
 		return;
 	}
 	
-	printf("%s: %lu\n", path, m->facecount);
+	printf("%s: %lu\n", path, (unsigned long)m->facecount);
 	
 	(void)trixRelease(m);
 }
