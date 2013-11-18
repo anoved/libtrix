@@ -11,7 +11,8 @@ typedef enum {
 	TRIX_ERR,
 	TRIX_ERR_ARG,
 	TRIX_ERR_FILE,
-	TRIX_ERR_MEM
+	TRIX_ERR_MEM,
+	TRIX_ERR_MAXFACECOUNT
 } trix_result;
 
 typedef enum {

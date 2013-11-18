@@ -25,7 +25,8 @@ test static-splint-1 {
 	has_splint
 } -body {
 	# +quiet suppresses "herald" line and error count (simplifies success case)
-	exec splint -weak +quiet ../libtrix.c
+	# UINT32_MAX explicitly defined as in stdint.h because splint struggles with C99
+	exec splint -weak +quiet -DUINT32_MAX=4294967295U ../libtrix.c
 } -result {}
 
 test static-cppcheck-1 {
