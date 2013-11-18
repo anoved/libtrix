@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <ctype.h>
 #include <math.h>
 
 #include "libtrix.h"
@@ -236,15 +237,14 @@ static trix_result trixReadBinary(FILE *stl_src, trix_mesh **dst_mesh) {
 }
 
 static trix_result trixReadTriangleASCII(FILE *stl_src, trix_triangle *triangle) {
-	// fragile!
 	if (fscanf(stl_src,
-			"facet normal %20f %20f %20f\n"
-			"outer loop\n"
-			"vertex %20f %20f %20f\n"
-			"vertex %20f %20f %20f\n"
-			"vertex %20f %20f %20f\n"
-			"endloop\n"
-			"endfacet\n",
+			" facet normal %20f %20f %20f"
+			" outer loop"
+			" vertex %20f %20f %20f"
+			" vertex %20f %20f %20f"
+			" vertex %20f %20f %20f"
+			" endloop"
+			" endfacet ",
 			&triangle->n.x, &triangle->n.y, &triangle->n.z,
 			&triangle->a.x, &triangle->a.y, &triangle->a.z,
 			&triangle->b.x, &triangle->b.y, &triangle->b.z,
@@ -259,33 +259,37 @@ static trix_result trixReadASCII(FILE *stl_src, trix_mesh **dst_mesh) {
 	trix_mesh *mesh;
 	trix_triangle triangle;
 	trix_result rr;
-	fpos_t p;
+	char linebuffer[256];
+	char namebuffer[128];
 	
+	// read first line
+	if (fgets(linebuffer, 256, stl_src) == NULL) {
+		return TRIX_ERR_FILE;
+	}
+	
+	// check for 'solid' keyword and identifier (ignore any other comments)
+	if (sscanf(linebuffer, " solid %127s ", namebuffer) != 1) {
+		return TRIX_ERR_FILE;
+	}
+		
 	if ((rr = trixCreate(NULL, &mesh)) != TRIX_OK) {
 		return rr;
 	}
 	
-	// expect but discard a solid name
-	fscanf(stl_src, "solid %*100s\n");
-	fgetpos(stl_src, &p);
-	
 	while (trixReadTriangleASCII(stl_src, &triangle) == TRIX_OK) {
-		fgetpos(stl_src, &p);
 		if ((rr = trixAddTriangle(mesh, &triangle)) != TRIX_OK) {
 			(void)trixRelease(mesh);
 			return rr;
 		}
 	}
 	
-	// read the footer; a bit pedantic since data has already been read
-	fsetpos(stl_src, &p);
-	if (fscanf(stl_src, "endsolid %*100s\n") == EOF) {
-		printf("failed to read footer\n");
-	}
-	
+	// ignore endsolid footer; to be pedantic, check that it
+	// specifies the same identifier given with solid header
+		
 	*dst_mesh = mesh;
 	return TRIX_OK;
 }
+
 
 trix_result trixRead(const char *src_path, trix_mesh **dst_mesh) {
 	trix_mesh *mesh;
@@ -293,12 +297,18 @@ trix_result trixRead(const char *src_path, trix_mesh **dst_mesh) {
 	char header[5];
 	trix_result rr;
 	
+	char c;
+	
 	if (src_path == NULL) {
 		stl_src = stdin;
 	} else if ((stl_src = fopen(src_path, "r")) == NULL) {
 		return TRIX_ERR_FILE;
 	}
 	
+	// iffy if there is nothing at all in the file.
+	
+	while (isspace(c = fgetc(stl_src))) {}
+	ungetc(c, stl_src);
 	if (fread(header, 1, 5, stl_src) != 5) {
 		trixCloseInput(stl_src);
 		return TRIX_ERR_FILE;
