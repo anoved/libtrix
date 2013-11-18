@@ -27,8 +27,8 @@ trix_result trixApply(trix_mesh *mesh, trix_function func) {
 	return TRIX_OK;
 }
 
-trix_result trixFacecount(const trix_mesh *mesh, unsigned long *dst_count) {
-	unsigned long count;
+trix_result trixFacecount(const trix_mesh *mesh, uint32_t *dst_count) {
+	uint32_t count;
 	trix_face *face;
 	
 	if (mesh == NULL) {
@@ -208,9 +208,11 @@ trix_result trixWrite(const char *dst_path, const trix_mesh *mesh, trix_stl_mode
 }
 
 static trix_result trixReadBinary(FILE *stl_src, trix_mesh **dst_mesh) {
-	unsigned long facecount, f;
+	
+	uint32_t facecount, f;
+	uint16_t attribute;
+	
 	trix_triangle triangle;
-	unsigned short attribute;
 	trix_mesh *mesh;
 	trix_result rr;
 	
@@ -364,6 +366,8 @@ trix_result trixAddTriangle(trix_mesh *mesh, const trix_triangle *triangle) {
 		mesh->last = face;
 	}
 	
+	// check for maximum facecount here?
+	// may only apply to binary output
 	mesh->facecount += 1;
 	return TRIX_OK;
 }

@@ -1,6 +1,8 @@
 #ifndef _LIBTRIX_H_
 #define _LIBTRIX_H_
 
+#include <stdint.h>
+
 #define TRIX_MESH_NAME_MAX 80
 #define TRIX_MESH_NAME_DEFAULT "libtrix"
 
@@ -34,7 +36,7 @@ typedef struct trix_face_node trix_face;
 typedef struct {
 	char name[TRIX_MESH_NAME_MAX];
 	trix_face *first, *last;
-	unsigned long facecount;
+	uint32_t facecount;
 } trix_mesh;
 
 // use trixApply to apply func to each face of mesh
@@ -62,6 +64,6 @@ trix_result trixAddTriangle(trix_mesh *mesh, const trix_triangle *triangle);
 
 // mesh facecount is updated automatically by trixAddTriangle,
 // but as a utility trixFacecount will double-check the count
-trix_result trixFacecount(const trix_mesh *mesh, unsigned long *dst_count);
+trix_result trixFacecount(const trix_mesh *mesh, uint32_t *dst_count);
 
 #endif
