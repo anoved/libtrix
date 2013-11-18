@@ -1,7 +1,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <ctype.h>
 #include <math.h>
 
 #include "libtrix.h"
@@ -139,12 +138,6 @@ static trix_result trixWriteFace(FILE *stl_dst, trix_face *face, trix_stl_mode m
 static void trixCloseOutput(FILE *dst) {
 	if (dst != NULL && dst != stdout) {
 		fclose(dst);
-	}
-}
-
-static void trixCloseInput(FILE *src) {
-	if (src != NULL && src != stdin) {
-		fclose(src);
 	}
 }
 
@@ -294,42 +287,34 @@ static trix_result trixReadASCII(FILE *stl_src, trix_mesh **dst_mesh) {
 trix_result trixRead(const char *src_path, trix_mesh **dst_mesh) {
 	trix_mesh *mesh;
 	FILE *stl_src;
-	char header[5];
 	trix_result rr;
-	
-	char c;
-	
+		
 	if (src_path == NULL) {
 		stl_src = stdin;
 	} else if ((stl_src = fopen(src_path, "r")) == NULL) {
 		return TRIX_ERR_FILE;
 	}
 	
-	// iffy if there is nothing at all in the file.
-	
-	while (isspace(c = fgetc(stl_src))) {}
-	ungetc(c, stl_src);
-	if (fread(header, 1, 5, stl_src) != 5) {
-		trixCloseInput(stl_src);
-		return TRIX_ERR_FILE;
-	}
-	
-	rewind(stl_src);
-	
-	if (strncmp(header, "solid", 5) == 0) {
-		rr = trixReadASCII(stl_src, &mesh);
-	} else {
+	// first try to read the file as ASCII STL,
+	// since we can easily check for 'solid' keyword in first line
+	rr = trixReadASCII(stl_src, &mesh);
+	if (rr == TRIX_ERR_FILE) {
+		
+		// we've already opened the file, so a file error just
+		// means it can't be parsed as ASCII; retry as binary
+		rewind(stl_src);
 		rr = trixReadBinary(stl_src, &mesh);
 	}
 	
-	if (rr != TRIX_OK) {
-		trixCloseInput(stl_src);
-		return rr;
+	if (stl_src != stdin) {
+		fclose(stl_src);
 	}
 	
-	trixCloseInput(stl_src);
-	*dst_mesh = mesh;
-	return TRIX_OK;
+	if (rr == TRIX_OK) {
+		*dst_mesh = mesh;
+	}
+	
+	return rr;
 }
 
 trix_result trixAddTriangle(trix_mesh *mesh, const trix_triangle *triangle) {
