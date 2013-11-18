@@ -225,9 +225,9 @@ static trix_result trixReadBinary(FILE *stl_src, trix_mesh **dst_mesh) {
 			return TRIX_ERR_FILE;
 		}
 		
-		if (trixAddTriangle(mesh, &triangle)) {
+		if ((rr = trixAddTriangle(mesh, &triangle)) != TRIX_OK) {
 			(void)trixRelease(mesh);
-			return TRIX_ERR_FILE;
+			return rr;
 		}
 	}
 	
