@@ -62,8 +62,4 @@ trix_result trixRecalculateNormals(trix_mesh *mesh);
 // appends a trix_face containing triangle to the end of the mesh list
 trix_result trixAddTriangle(trix_mesh *mesh, const trix_triangle *triangle);
 
-// mesh facecount is updated automatically by trixAddTriangle,
-// but as a utility trixFacecount will double-check the count
-trix_result trixFacecount(const trix_mesh *mesh, uint32_t *dst_count);
-
 #endif

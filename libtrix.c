@@ -27,25 +27,6 @@ trix_result trixApply(trix_mesh *mesh, trix_function func) {
 	return TRIX_OK;
 }
 
-trix_result trixFacecount(const trix_mesh *mesh, uint32_t *dst_count) {
-	uint32_t count;
-	trix_face *face;
-	
-	if (mesh == NULL) {
-		return TRIX_ERR_ARG;
-	}
-	
-	count = 0;
-	face = mesh->first;
-	while (face != NULL) {
-		count += 1;
-		face = face->next;
-	}
-	
-	*dst_count = count;
-	return TRIX_OK;
-}
-
 static trix_result trixWriteHeaderBinary(FILE *stl_dst, const trix_mesh *mesh) {
 	char header[80];
 	
