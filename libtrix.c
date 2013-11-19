@@ -374,32 +374,20 @@ trix_result trixCreate(const char *name, trix_mesh **dst_mesh) {
 	return TRIX_OK;
 }
 
-// returns pointer to the reset normal vector
-static void trixResetTriangleNormal(trix_triangle *triangle) {
-	
-	if (triangle == NULL) {
-		return;
-	}
-	
-	triangle->n.x = 0.0;
-	triangle->n.y = 0.0;
-	triangle->n.z = 0.0;
-}
-
-trix_result trixResetNormals(trix_mesh *mesh) {
-	trix_face *face;
-	
-	if (mesh == NULL) {
+static trix_result trixResetFaceNormal(trix_face *face) {
+	if (face == NULL) {
 		return TRIX_ERR_ARG;
 	}
 	
-	face = mesh->first;
-	while (face != NULL) {
-		trixResetTriangleNormal(&face->triangle);
-		face = face->next;
-	}
+	face->triangle.n.x = 0;
+	face->triangle.n.y = 0;
+	face->triangle.n.z = 0;
 	
 	return TRIX_OK;
+}
+
+trix_result trixResetNormals(trix_mesh *mesh) {
+	return trixApply(mesh, (trix_function)trixResetFaceNormal, NULL);
 }
 
 // sets result to difference of vectors a and b (b - a)
