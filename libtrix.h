@@ -5,7 +5,16 @@
 
 #define TRIX_MESH_NAME_MAX 80
 #define TRIX_MESH_NAME_DEFAULT "libtrix"
-#define TRIX_FACE_MAX UINT32_MAX
+
+/*
+ * The maximum number of faces allowed in a mesh.
+ * This value is constrained by the four bytes available
+ * to indicate the number of faces in a binary STL file.
+ * Technically, no such constraint applies to ASCII STL, but
+ * libtrix applies this limit in all cases for consistency.
+ * (This value is also given in stdint.h as UINT32_MAX.)
+ */
+#define TRIX_FACE_MAX 4294967295U
 
 /*
  * Every libtrix function returns a trix_result status code.
