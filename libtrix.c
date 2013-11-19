@@ -210,17 +210,17 @@ static trix_result trixReadBinary(FILE *stl_src, trix_mesh **dst_mesh) {
 	for (f = 0; f < facecount; f++) {
 		
 		if (fread(&triangle, 4, 12, stl_src) != 12) {
-			(void)trixRelease(mesh);
+			(void)trixRelease(&mesh);
 			return TRIX_ERR_FILE;
 		}
 		
 		if (fread(&attribute, 2, 1, stl_src) != 1) {
-			(void)trixRelease(mesh);
+			(void)trixRelease(&mesh);
 			return TRIX_ERR_FILE;
 		}
 		
 		if ((rr = trixAddTriangle(mesh, &triangle)) != TRIX_OK) {
-			(void)trixRelease(mesh);
+			(void)trixRelease(&mesh);
 			return rr;
 		}
 	}
@@ -271,7 +271,7 @@ static trix_result trixReadASCII(FILE *stl_src, trix_mesh **dst_mesh) {
 	
 	while (trixReadTriangleASCII(stl_src, &triangle) == TRIX_OK) {
 		if ((rr = trixAddTriangle(mesh, &triangle)) != TRIX_OK) {
-			(void)trixRelease(mesh);
+			(void)trixRelease(&mesh);
 			return rr;
 		}
 	}
@@ -452,23 +452,21 @@ trix_result trixUpdateNormals(trix_mesh *mesh, trix_winding_order order) {
 	return trixApply(mesh, (trix_function)trixUpdateFaceNormal, (void *)&order);
 }
 
-trix_result trixRelease(trix_mesh *mesh) {
-
+trix_result trixRelease(trix_mesh **mesh) {
 	trix_face *face, *nextface;
 	
-	if (mesh == NULL) {
+	if (mesh == NULL || *mesh == NULL) {
 		return TRIX_ERR_ARG;
 	}
 	
-	face = mesh->first;
-	
+	face = (*mesh)->first;
 	while (face != NULL) {
 		nextface = face->next;
 		free(face);
 		face = nextface;
 	}
 	
-	free(mesh);
-	mesh = NULL;
+	free(*mesh);
+	*mesh = NULL;
 	return TRIX_OK;
 }

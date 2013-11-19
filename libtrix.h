@@ -159,9 +159,10 @@ trix_result trixWrite(const char *dst_path, const trix_mesh *mesh, trix_stl_mode
  * Mesh no longer usable once released.
  * 
  * mesh
- * 	The mesh to release.
+ * 	Pointer to the mesh to release.
+ * 	mesh is set to NULL once released.
  */
-trix_result trixRelease(trix_mesh *mesh);
+trix_result trixRelease(trix_mesh **mesh);
 
 /*
  * trixZeroNormals
