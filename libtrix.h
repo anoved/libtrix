@@ -200,6 +200,19 @@ trix_result trixUpdateNormals(trix_mesh *mesh, trix_winding_order order);
 trix_result trixAddTriangle(trix_mesh *mesh, const trix_triangle *triangle);
 
 /*
+ * trixAddMesh
+ * 
+ * Add faces from one mesh to another.
+ * 
+ * mesh
+ * 	The mesh to which the faces should be added.
+ * src_mesh
+ * 	The mesh whose faces should be added.
+ * 	src_mesh is not modified.
+ */
+trix_result trixAddMesh(trix_mesh *mesh, const trix_mesh *src_mesh);
+
+/*
  * trixApply
  * 
  * Apply an arbitrary function to each face in mesh.
@@ -214,6 +227,6 @@ trix_result trixAddTriangle(trix_mesh *mesh, const trix_triangle *triangle);
  *  A pointer to arbitrary data. Passed to each invocation of func.
  * 	May be NULL if not needed.
  */
-trix_result trixApply(trix_mesh *mesh, trix_function func, void *data);
+trix_result trixApply(const trix_mesh *mesh, trix_function func, void *data);
 
 #endif

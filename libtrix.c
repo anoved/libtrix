@@ -5,7 +5,7 @@
 
 #include "libtrix.h"
 
-trix_result trixApply(trix_mesh *mesh, trix_function func, void *data) {
+trix_result trixApply(const trix_mesh *mesh, trix_function func, void *data) {
 	trix_face *face, *next;
 	trix_result rr;
 	
@@ -348,6 +348,14 @@ trix_result trixAddTriangle(trix_mesh *mesh, const trix_triangle *triangle) {
 	
 	mesh->facecount += 1;
 	return TRIX_OK;
+}
+
+static trix_result trixAddFaceFunc(trix_face *face, trix_mesh *dst_mesh) {
+	return trixAddTriangle(dst_mesh, &face->triangle);
+}
+
+trix_result trixAddMesh(trix_mesh *dst_mesh, const trix_mesh *src_mesh) {
+	return trixApply(src_mesh, (trix_function)trixAddFaceFunc, (void *)dst_mesh);
 }
 
 trix_result trixCreate(const char *name, trix_mesh **dst_mesh) {
