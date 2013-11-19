@@ -1,5 +1,6 @@
-// Usage: ./renormal < input.stl > output.stla
+// Usage: ./renormal [r] < input.stl > output.stla
 // Reads input.stl model, recomputes normal vectors of each face, and prints ASCII STL including updated normals. 
+// if r argument is given, face normals are reversed
 
 #include <stdio.h>
 #include <libtrix.h>
@@ -12,7 +13,7 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 	
-	if (trixRecalculateNormals(mesh) != TRIX_OK) {
+	if (trixRecalculateNormals(mesh, TRIX_WINDING_DEFAULT) != TRIX_OK) {
 		fprintf(stderr, "surface normals calculation failed\n");
 		return 1;
 	}

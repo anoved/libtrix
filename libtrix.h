@@ -20,6 +20,12 @@ typedef enum {
 	TRIX_STL_ASCII
 } trix_stl_mode;
 
+typedef enum {
+	TRIX_WINDING_CCW,
+	TRIX_WINDING_CW,
+	TRIX_WINDING_DEFAULT = TRIX_WINDING_CCW
+} trix_winding_order;
+
 typedef struct {
 	float x, y, z;
 } trix_vertex;
@@ -58,7 +64,7 @@ trix_result trixRelease(trix_mesh *mesh);
 
 trix_result trixResetNormals(trix_mesh *mesh);
 
-trix_result trixRecalculateNormals(trix_mesh *mesh);
+trix_result trixRecalculateNormals(trix_mesh *mesh, trix_winding_order order);
 
 // appends a trix_face containing triangle to the end of the mesh list
 trix_result trixAddTriangle(trix_mesh *mesh, const trix_triangle *triangle);

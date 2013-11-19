@@ -439,7 +439,11 @@ static trix_result trixRecalculateFaceNormal(trix_face *face, void *data) {
 	// the cross product of two vectors is perpendicular to both
 	// since vectors u and v both lie in the plane of triangle abc,
 	// the cross product is perpendicular to the triangle's surface
-	vector_crossproduct(&u, &v, &cp);
+	if (data == NULL || *(trix_winding_order *)data == TRIX_WINDING_CCW) {
+		vector_crossproduct(&u, &v, &cp);
+	} else {
+		vector_crossproduct(&v, &u, &cp);
+	}
 	
 	// normalize the cross product to unit length to get surface normal n
 	vector_unitvector(&cp, &n);
@@ -450,8 +454,8 @@ static trix_result trixRecalculateFaceNormal(trix_face *face, void *data) {
 	return TRIX_OK;
 }
 
-trix_result trixRecalculateNormals(trix_mesh *mesh) {
-	return trixApply(mesh, (trix_function)trixRecalculateFaceNormal, NULL);
+trix_result trixRecalculateNormals(trix_mesh *mesh, trix_winding_order order) {
+	return trixApply(mesh, (trix_function)trixRecalculateFaceNormal, (void *)&order);
 }
 
 trix_result trixRelease(trix_mesh *mesh) {
