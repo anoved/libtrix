@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 	
-	if (trixRecalculateNormals(mesh, TRIX_WINDING_DEFAULT) != TRIX_OK) {
+	if (trixUpdateNormals(mesh, TRIX_WINDING_DEFAULT) != TRIX_OK) {
 		fprintf(stderr, "surface normals calculation failed\n");
 		return 1;
 	}
@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 	
-	(void)trixRelease(mesh);
+	(void)trixRelease(&mesh);
 	
 	return 0;
 }

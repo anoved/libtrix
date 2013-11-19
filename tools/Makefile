@@ -12,7 +12,7 @@ LDFLAGS = -ltrix -lm -L/usr/local/lib -Wl,-R/usr/local/lib
 
 .PHONY: all clean
 
-all: facecount renormal
+all: facecount renormal zeronormals
 
 facecount: facecount.c
 	gcc $(CFLAGS) facecount.c -o facecount $(LDFLAGS)
@@ -24,4 +24,4 @@ zeronormals: zeronormals.c
 	gcc $(CFLAGS) zeronormals.c -o zeronormals $(LDFLAGS)
 
 clean:
-	rm -f facecount renormal
+	rm -f facecount renormal zeronormals

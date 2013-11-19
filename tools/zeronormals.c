@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 	
-	if (trixResetNormals(mesh) != TRIX_OK) {
+	if (trixZeroNormals(mesh) != TRIX_OK) {
 		fprintf(stderr, "normal vector reset failed\n");
 		return 1;
 	}
@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 	
-	(void)trixRelease(mesh);
+	(void)trixRelease(&mesh);
 	
 	return 0;
 }

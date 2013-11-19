@@ -15,7 +15,7 @@ void PrintMeshFacecount(const char *path) {
 	
 	printf("%s: %lu\n", path, (unsigned long)m->facecount);
 	
-	(void)trixRelease(m);
+	(void)trixRelease(&m);
 }
 
 int main(int argc, char **argv) {
