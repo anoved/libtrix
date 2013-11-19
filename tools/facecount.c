@@ -8,7 +8,7 @@ void PrintMeshFacecount(const char *path) {
 	trix_mesh *m;
 	trix_result r;
 	
-	if ((r = trixRead(path, &m)) != TRIX_OK) {
+	if ((r = trixRead(&m, path)) != TRIX_OK) {
 		fprintf(stderr, "Cannot open %s (%d)\n", path, (int)r);
 		return;
 	}

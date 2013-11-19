@@ -7,7 +7,7 @@
 int main(int argc, char **argv) {
 	trix_mesh *mesh;
 	
-	if (trixRead(NULL, &mesh) != TRIX_OK) {
+	if (trixRead(&mesh, NULL) != TRIX_OK) {
 		fprintf(stderr, "input failed\n");
 		return 1;
 	}
@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 	
-	if (trixWrite(NULL, mesh, TRIX_STL_ASCII) != TRIX_OK) {
+	if (trixWrite(mesh, NULL, TRIX_STL_ASCII) != TRIX_OK) {
 		fprintf(stderr, "output failed\n");
 		return 1;
 	}
