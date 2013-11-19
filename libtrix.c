@@ -354,7 +354,7 @@ trix_result trixCreate(const char *name, trix_mesh **dst_mesh) {
 	trix_mesh *mesh;
 	
 	if ((mesh = (trix_mesh *)malloc(sizeof(trix_mesh))) == NULL) {
-		return TRIX_ERR;
+		return TRIX_ERR_MEM;
 	}
 	
 	if (name == NULL) {
