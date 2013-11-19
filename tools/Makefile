@@ -20,5 +20,8 @@ facecount: facecount.c
 renormal: renormal.c
 	gcc $(CFLAGS) renormal.c -o renormal $(LDFLAGS)
 
+zeronormals: zeronormals.c
+	gcc $(CFLAGS) zeronormals.c -o zeronormals $(LDFLAGS)
+
 clean:
 	rm -f facecount renormal
