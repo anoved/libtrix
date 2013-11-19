@@ -5,6 +5,7 @@
 
 #define TRIX_MESH_NAME_MAX 80
 #define TRIX_MESH_NAME_DEFAULT "libtrix"
+#define TRIX_FACE_MAX UINT32_MAX
 
 typedef enum {
 	TRIX_OK,

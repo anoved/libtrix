@@ -326,7 +326,7 @@ trix_result trixAddTriangle(trix_mesh *mesh, const trix_triangle *triangle) {
 	
 	// disallow adding more faces than we can count
 	// (constrained by the 4 bytes available for facecount in binary STL)
-	if (mesh->facecount == UINT32_MAX) {
+	if (mesh->facecount == TRIX_FACE_MAX) {
 		return TRIX_ERR_MAXFACECOUNT;
 	}
 	
@@ -336,9 +336,7 @@ trix_result trixAddTriangle(trix_mesh *mesh, const trix_triangle *triangle) {
 	
 	face->triangle = *triangle;
 	face->next = NULL;
-	
-	// consider using trixRecalculateTriangleNormal here
-	
+		
 	if (mesh->last == NULL) {
 		// this is the first face
 		mesh->first = face;
