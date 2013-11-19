@@ -372,7 +372,7 @@ trix_result trixCreate(const char *name, trix_mesh **dst_mesh) {
 	return TRIX_OK;
 }
 
-static trix_result trixResetFaceNormal(trix_face *face) {
+static trix_result trixZeroFaceNormal(trix_face *face) {
 	if (face == NULL) {
 		return TRIX_ERR_ARG;
 	}
@@ -384,8 +384,8 @@ static trix_result trixResetFaceNormal(trix_face *face) {
 	return TRIX_OK;
 }
 
-trix_result trixResetNormals(trix_mesh *mesh) {
-	return trixApply(mesh, (trix_function)trixResetFaceNormal, NULL);
+trix_result trixZeroNormals(trix_mesh *mesh) {
+	return trixApply(mesh, (trix_function)trixZeroFaceNormal, NULL);
 }
 
 // sets result to difference of vectors a and b (b - a)
@@ -411,7 +411,7 @@ static void vector_unitvector(const trix_vertex *v, trix_vertex *result) {
 	result->z = v->z / mag;
 }
 
-static trix_result trixRecalculateFaceNormal(trix_face *face, trix_winding_order *order) {
+static trix_result trixUpdateFaceNormal(trix_face *face, trix_winding_order *order) {
 	trix_vertex u, v, cp, n;
 	
 	if (face == NULL) {
@@ -440,8 +440,8 @@ static trix_result trixRecalculateFaceNormal(trix_face *face, trix_winding_order
 	return TRIX_OK;
 }
 
-trix_result trixRecalculateNormals(trix_mesh *mesh, trix_winding_order order) {
-	return trixApply(mesh, (trix_function)trixRecalculateFaceNormal, (void *)&order);
+trix_result trixUpdateNormals(trix_mesh *mesh, trix_winding_order order) {
+	return trixApply(mesh, (trix_function)trixUpdateFaceNormal, (void *)&order);
 }
 
 trix_result trixRelease(trix_mesh *mesh) {

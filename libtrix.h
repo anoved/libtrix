@@ -47,27 +47,31 @@ typedef struct {
 	uint32_t facecount;
 } trix_mesh;
 
-// use trixApply to apply func to each face of mesh
 typedef trix_result (*trix_function)(trix_face *face, void *data);
-trix_result trixApply(trix_mesh *mesh, trix_function func, void *data);
 
 // If name is NULL, default mesh name will be used.
 trix_result trixCreate(const char *name, trix_mesh **dst_mesh);
 
-// output mesh to dst_path format indicated by mode. writes to stdout if dst_path is null. returns nonzero on error
-trix_result trixWrite(const char *dst_path, const trix_mesh *mesh, trix_stl_mode mode);
-
 // creates mesh read from stl_src; reads from stdin if src_path is null. returns null on error.
 trix_result trixRead(const char *src_path, trix_mesh **dst_mesh);
+
+// output mesh to dst_path format indicated by mode. writes to stdout if dst_path is null. returns nonzero on error
+trix_result trixWrite(const char *dst_path, const trix_mesh *mesh, trix_stl_mode mode);
 
 // free memory associated with mesh (disassembles face list)
 trix_result trixRelease(trix_mesh *mesh);
 
-trix_result trixResetNormals(trix_mesh *mesh);
+// reset all face normals in mesh to zero
+trix_result trixZeroNormals(trix_mesh *mesh);
 
-trix_result trixRecalculateNormals(trix_mesh *mesh, trix_winding_order order);
+// recalculate all face normals in mesh based on triangle vertex winding order
+trix_result trixUpdateNormals(trix_mesh *mesh, trix_winding_order order);
 
 // appends a trix_face containing triangle to the end of the mesh list
 trix_result trixAddTriangle(trix_mesh *mesh, const trix_triangle *triangle);
+
+// use trixApply to apply func to each face of mesh
+trix_result trixApply(trix_mesh *mesh, trix_function func, void *data);
+
 
 #endif
