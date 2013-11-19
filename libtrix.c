@@ -425,7 +425,7 @@ static void vector_unitvector(const trix_vertex *v, trix_vertex *result) {
 	result->z = v->z / mag;
 }
 
-static trix_result trixRecalculateFaceNormal(trix_face *face, void *data) {
+static trix_result trixRecalculateFaceNormal(trix_face *face, trix_winding_order *order) {
 	trix_vertex u, v, cp, n;
 	
 	if (face == NULL) {
@@ -439,7 +439,7 @@ static trix_result trixRecalculateFaceNormal(trix_face *face, void *data) {
 	// the cross product of two vectors is perpendicular to both
 	// since vectors u and v both lie in the plane of triangle abc,
 	// the cross product is perpendicular to the triangle's surface
-	if (data == NULL || *(trix_winding_order *)data == TRIX_WINDING_CCW) {
+	if (order == NULL || *order == TRIX_WINDING_CCW) {
 		vector_crossproduct(&u, &v, &cp);
 	} else {
 		vector_crossproduct(&v, &u, &cp);
