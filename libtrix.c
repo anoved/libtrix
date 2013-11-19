@@ -142,7 +142,7 @@ static void trixCloseOutput(FILE *dst) {
 }
 
 // stl_dst is assumed to be open and ready for writing
-trix_result trixWrite(const char *dst_path, const trix_mesh *mesh, trix_stl_mode mode) {
+trix_result trixWrite(const trix_mesh *mesh, const char *dst_path, trix_stl_mode mode) {
 	trix_face *face;
 	FILE *stl_dst;
 	trix_result rr;
@@ -200,7 +200,7 @@ static trix_result trixReadBinary(FILE *stl_src, trix_mesh **dst_mesh) {
 		return TRIX_ERR_FILE;
 	}
 	
-	if ((rr = trixCreate(NULL, &mesh)) != TRIX_OK) {
+	if ((rr = trixCreate(&mesh, NULL)) != TRIX_OK) {
 		return rr;
 	}
 	
@@ -265,7 +265,7 @@ static trix_result trixReadASCII(FILE *stl_src, trix_mesh **dst_mesh) {
 		return TRIX_ERR_FILE;
 	}
 		
-	if ((rr = trixCreate(NULL, &mesh)) != TRIX_OK) {
+	if ((rr = trixCreate(&mesh, NULL)) != TRIX_OK) {
 		return rr;
 	}
 	
@@ -284,7 +284,7 @@ static trix_result trixReadASCII(FILE *stl_src, trix_mesh **dst_mesh) {
 }
 
 
-trix_result trixRead(const char *src_path, trix_mesh **dst_mesh) {
+trix_result trixRead(trix_mesh **new_mesh, const char *src_path) {
 	trix_mesh *mesh;
 	FILE *stl_src;
 	trix_result rr;
@@ -311,7 +311,7 @@ trix_result trixRead(const char *src_path, trix_mesh **dst_mesh) {
 	}
 	
 	if (rr == TRIX_OK) {
-		*dst_mesh = mesh;
+		*new_mesh = mesh;
 	}
 	
 	return rr;
@@ -358,7 +358,7 @@ trix_result trixAddMesh(trix_mesh *dst_mesh, const trix_mesh *src_mesh) {
 	return trixApply(src_mesh, (trix_function)trixAddFaceFunc, (void *)dst_mesh);
 }
 
-trix_result trixCreate(const char *name, trix_mesh **dst_mesh) {
+trix_result trixCreate(trix_mesh **new_mesh, const char *name) {
 	trix_mesh *mesh;
 	
 	if ((mesh = (trix_mesh *)malloc(sizeof(trix_mesh))) == NULL) {
@@ -376,7 +376,7 @@ trix_result trixCreate(const char *name, trix_mesh **dst_mesh) {
 	mesh->last = NULL;
 	mesh->facecount = 0;
 	
-	*dst_mesh = mesh;
+	*new_mesh = mesh;
 	return TRIX_OK;
 }
 

@@ -113,14 +113,14 @@ typedef trix_result (*trix_function)(trix_face *face, void *data);
  * 
  * Allocate a new empty mesh.
  * 
+ * new_mesh
+ *  A pointer to a trix_mesh pointer, which will be allocated
+ * 	if the function succeeds.
  * name
  * 	A name to associate with the mesh.
  * 	If NULL, the default libtrix mesh name will be used.
- * dst_mesh
- *  A pointer to a trix_mesh pointer, which will be allocated
- * 	if the function succeeds.
  */
-trix_result trixCreate(const char *name, trix_mesh **dst_mesh);
+trix_result trixCreate(trix_mesh **new_mesh, const char *name);
 
 /*
  * trixRead
@@ -128,29 +128,29 @@ trix_result trixCreate(const char *name, trix_mesh **dst_mesh);
  * Allocate a new mesh read from an STL file.
  * Binary and ASCII STL files are supported.
  * 
+ * new_mesh
+ * 	A pointer to a trix_mesh pointer, which will be allocated
+ * 	if the function succeeds.
  * src_path
  * 	Path to STL file to read.
  * 	If NULL, read from stdin.
- * dst_mesh
- * 	A pointer to a trix_mesh pointer, which will be allocated
- * 	if the function succeeds.
  */
-trix_result trixRead(const char *src_path, trix_mesh **dst_mesh);
+trix_result trixRead(trix_mesh **new_mesh, const char *src_path);
 
 /*
  * trixWrite
  * 
  * Write a mesh to an STL file.
  * 
+ * mesh
+ *  The mesh to write.
  * dst_path
  * 	Path to STL file to write.
  * 	If NULL, write to stdout.
- * mesh
- *  The mesh to write.
  * mode
  *  Whether to output ASCII or binary STL format.
  */
-trix_result trixWrite(const char *dst_path, const trix_mesh *mesh, trix_stl_mode mode);
+trix_result trixWrite(const trix_mesh *mesh, const char *dst_path, trix_stl_mode mode);
 
 /*
  * trixRelease
