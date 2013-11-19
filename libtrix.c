@@ -5,7 +5,7 @@
 
 #include "libtrix.h"
 
-trix_result trixApply(trix_mesh *mesh, trix_function func) {
+trix_result trixApply(trix_mesh *mesh, trix_function func, void *data) {
 	trix_face *face, *next;
 	trix_result rr;
 	
@@ -17,7 +17,7 @@ trix_result trixApply(trix_mesh *mesh, trix_function func) {
 	while (face != NULL) {
 		next = face->next;
 		
-		if ((rr = (func)(face)) != TRIX_OK) {
+		if ((rr = (func)(face, data)) != TRIX_OK) {
 			return rr;
 		}
 		
@@ -425,7 +425,7 @@ static void vector_unitvector(const trix_vertex *v, trix_vertex *result) {
 	result->z = v->z / mag;
 }
 
-static trix_result trixRecalculateFaceNormal(trix_face *face) {
+static trix_result trixRecalculateFaceNormal(trix_face *face, void *data) {
 	trix_vertex u, v, cp, n;
 	
 	if (face == NULL) {
@@ -451,7 +451,7 @@ static trix_result trixRecalculateFaceNormal(trix_face *face) {
 }
 
 trix_result trixRecalculateNormals(trix_mesh *mesh) {
-	return trixApply(mesh, (trix_function)trixRecalculateFaceNormal);
+	return trixApply(mesh, (trix_function)trixRecalculateFaceNormal, NULL);
 }
 
 trix_result trixRelease(trix_mesh *mesh) {
