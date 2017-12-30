@@ -1,8 +1,15 @@
-CC = gcc
-PREFIX = /usr/local
+CC ?= gcc
+PREFIX ?= /usr/local
 CFLAGS = -fPIC -Wall
 
 .PHONY: default install uninstall clean test
+
+UNAME = $(shell uname -s)
+ifeq ($(UNAME),Darwin)
+WLFLAG=-install_name
+else
+WLFLAG=-soname
+endif
 
 default: libtrix.a libtrix.so
 
@@ -15,7 +22,7 @@ libtrix.a: libtrix.o
 
 # shared library
 libtrix.so: libtrix.o
-	$(CC) $(CFLAGS) -shared -Wl,-soname,libtrix.so -o libtrix.so libtrix.o
+	$(CC) $(CFLAGS) -shared -Wl,$(WLFLAG),libtrix.so -o libtrix.so libtrix.o
 
 clean:
 	rm -f libtrix.so libtrix.a libtrix.o
